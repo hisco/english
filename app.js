@@ -148,7 +148,6 @@
   const SAY_FIND_TOTAL_SCENARIOS = SAY_FIND_PACKS.length * SAY_FIND_SCENARIOS_PER_PACK;
   const ACTION_SCENARIOS_PER_GAME = ACTION_BASE_ROUNDS.length * LEVELS_PER_PACK;
   const EXIT_HOLD_MS = 1600;
-  const REVEAL_REPEAT_DELAY_MS = 700;
   const NEXT_SCENARIO_DELAY_MS = 350;
   const SPEECH_FALLBACK_MS = 1200;
   const STORAGE_KEY = "little-english-games-progress";
@@ -334,9 +333,6 @@
     state.hasRevealedSayFindChoices = true;
     elements.sayFindHelperText.textContent = "Tap the cards. Every card speaks.";
     renderSayFindChoices(scenario);
-    window.setTimeout(() => {
-      void speakText(scenario.word);
-    }, REVEAL_REPEAT_DELAY_MS);
   }
   function renderSayFindChoices(scenario) {
     const choiceCards = createSayFindChoices(scenario).map((choice) => createSayFindChoiceCard(choice, scenario.word));
@@ -432,9 +428,6 @@
     state.hasRevealedBagChoices = true;
     elements.packBagHelperText.textContent = "Tap things to hear them. Pack the right one.";
     renderPackBagChoices(scenario);
-    window.setTimeout(() => {
-      void speakText(phrase);
-    }, REVEAL_REPEAT_DELAY_MS);
   }
   function renderPackBagChoices(scenario) {
     const choiceCards = createPackBagChoices(scenario).map((choice) => createPackBagChoiceCard(choice, scenario.word));
@@ -536,9 +529,6 @@
     state.hasRevealedActionChoices = true;
     elements.actionGameHelperText.textContent = "Tap each card to hear the noun and verb.";
     renderActionChoices(scenario);
-    window.setTimeout(() => {
-      void speakText(scenario.phrase);
-    }, REVEAL_REPEAT_DELAY_MS);
   }
   function renderActionChoices(scenario) {
     const choiceCards = createActionChoices(scenario).map((choice) => createActionChoiceCard(choice, scenario.phrase));
