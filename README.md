@@ -34,3 +34,15 @@ After the PR is merged to `main`, enable GitHub Pages for the repository:
 3. Push or re-run the **Deploy static site to GitHub Pages** workflow.
 
 The app is fully static and uses relative asset paths, so it works from the GitHub Pages project path, for example `https://hisco.github.io/english/`. Hash routes such as `#/catalog` and `#/numbers` keep browser navigation working without server rewrites.
+
+## Install on Android
+
+After the GitHub Pages site is live, Android users can install it like an app:
+
+1. Open the site in Chrome, for example `https://hisco.github.io/english/`.
+2. Open the Chrome menu.
+3. Tap **Install app** or **Add to Home screen**.
+4. Launch **English Games** from the home screen.
+
+The installed app opens in standalone mode without the browser address bar and keeps working offline after the first successful load.
+
