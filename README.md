@@ -22,3 +22,15 @@ python3 -m http.server 8080
 Then open `http://localhost:8080`.
 
 The app uses browser emojis for pictures, the Web Speech API for spoken words, Web Audio for the happy sound, `localStorage` for progress, and a service worker so the games keep working offline after the first load.
+
+## Deploy to GitHub Pages
+
+This repository includes a GitHub Actions workflow at `.github/workflows/pages.yml`.
+
+After the PR is merged to `main`, enable GitHub Pages for the repository:
+
+1. Open **Settings -> Pages** in GitHub.
+2. Set **Source** to **GitHub Actions**.
+3. Push or re-run the **Deploy static site to GitHub Pages** workflow.
+
+The app is fully static and uses relative asset paths, so it works from the GitHub Pages project path, for example `https://hisco.github.io/english/`. Hash routes such as `#/catalog` and `#/numbers` keep browser navigation working without server rewrites.
