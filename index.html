@@ -4,34 +4,61 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#7c3aed">
-    <title>Say & Find English</title>
+    <title>Little English Games</title>
     <link rel="stylesheet" href="./styles.css">
     <script defer src="./app.js"></script>
   </head>
   <body>
     <main class="app-shell" aria-live="polite">
-      <section id="picker-screen" class="screen screen-active" aria-labelledby="picker-title">
+      <section id="catalog-screen" class="screen screen-active" aria-labelledby="catalog-title">
         <div class="hero">
           <p class="eyebrow">Tap, listen, and learn</p>
-          <h1 id="picker-title">Say & Find English</h1>
-          <p class="hero-copy">Choose a pack. Everything works on this device after the first load.</p>
+          <h1 id="catalog-title">Little English Games</h1>
+          <p class="hero-copy">Choose a gentle game. Everything works on this device after the first load.</p>
+        </div>
+        <div id="game-catalog" class="catalog-grid" aria-label="Game catalog"></div>
+      </section>
+      <section id="pack-picker-screen" class="screen" aria-labelledby="picker-title">
+        <button id="catalog-back-button" class="soft-button" type="button">Game catalog</button>
+        <div class="hero compact-hero">
+          <p class="eyebrow">Say & Find</p>
+          <h1 id="picker-title">Choose a pack</h1>
+          <p class="hero-copy">First match pictures. Then listen and find the word by sound.</p>
         </div>
         <div id="pack-grid" class="pack-grid" aria-label="Word packs"></div>
       </section>
-      <section id="game-screen" class="screen game-screen" aria-labelledby="game-title">
-        <div id="parent-exit" class="parent-exit" aria-label="Hold to return to packs"></div>
+      <section id="say-find-screen" class="screen game-screen" aria-labelledby="say-find-title">
+        <div id="say-find-parent-exit" class="parent-exit" aria-label="Hold to return to packs"></div>
         <header class="game-header">
           <div>
-            <p id="pack-theme" class="eyebrow"></p>
-            <h1 id="game-title">Listen and find</h1>
+            <p id="say-find-pack-theme" class="eyebrow"></p>
+            <h1 id="say-find-title">Listen and find</h1>
           </div>
-          <div id="game-progress" class="progress-pill"></div>
+          <div id="say-find-progress" class="progress-pill"></div>
         </header>
         <div class="prompt-area">
-          <button id="prompt-card" class="card prompt-card" type="button" aria-label="Hear the word"></button>
-          <p id="helper-text" class="helper-text">Tap the big card to hear the word.</p>
+          <button id="say-find-prompt-card" class="card prompt-card" type="button" aria-label="Hear the word"></button>
+          <p id="say-find-helper-text" class="helper-text">Tap the big card to hear the word.</p>
         </div>
-        <div id="choice-grid" class="choice-grid" aria-label="Choices"></div>
+        <div id="say-find-choice-grid" class="choice-grid" aria-label="Choices"></div>
+      </section>
+      <section id="pack-bag-screen" class="screen game-screen pack-bag-screen" aria-labelledby="pack-bag-title">
+        <div id="pack-bag-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Pack My Bag</p>
+            <h1 id="pack-bag-title">Pack the word</h1>
+          </div>
+          <div id="pack-bag-progress" class="progress-pill"></div>
+        </header>
+        <div class="bag-stage">
+          <button id="pack-bag-prompt-card" class="card bag-prompt-card" type="button" aria-label="Hear what to pack">
+            <span class="bag-emoji" aria-hidden="true">🎒</span>
+            <span id="pack-bag-prompt-label" class="bag-prompt-label">Tap the bag</span>
+          </button>
+          <p id="pack-bag-helper-text" class="helper-text">Tap the bag to hear what to pack.</p>
+        </div>
+        <div id="pack-bag-choice-grid" class="choice-grid" aria-label="Things to pack"></div>
       </section>
     </main>
     <noscript>
