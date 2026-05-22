@@ -102,6 +102,29 @@
         </div>
         <div id="number-game-choice-grid" class="choice-grid" aria-label="Number choices"></div>
       </section>
+      <section id="memory-lock-screen" class="screen game-screen memory-lock-screen" aria-labelledby="memory-lock-title">
+        <div id="memory-lock-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p id="memory-lock-eyebrow" class="eyebrow">Memory Lock</p>
+            <h1 id="memory-lock-title">Open the lock</h1>
+          </div>
+          <div class="header-actions">
+            <button id="memory-lock-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="memory-lock-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="memory-stage">
+          <button id="memory-lock-card" class="card memory-lock-card" type="button" aria-label="Tap the lock to peek at the code">
+            <span id="memory-lock-icon" class="memory-lock-icon" aria-hidden="true">🔒</span>
+            <span id="memory-lock-status" class="memory-lock-status">Locked</span>
+          </button>
+          <div id="memory-code-display" class="memory-code-display" aria-label="Lock code"></div>
+          <div id="memory-input-display" class="memory-input-display" aria-label="Typed numbers"></div>
+          <p id="memory-lock-helper-text" class="helper-text">Type the four numbers to open the lock.</p>
+        </div>
+        <div id="memory-keypad" class="memory-keypad" aria-label="Number keypad"></div>
+      </section>
     </main>
     <noscript>
       <div class="noscript">This game needs JavaScript enabled on this device.</div>

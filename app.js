@@ -153,6 +153,15 @@
     Object.freeze({ number: 9, word: "nine" }),
     Object.freeze({ number: 10, word: "ten" })
   ]);
+  const MEMORY_CODES = Object.freeze([
+    Object.freeze([1, 2, 3, 4]),
+    Object.freeze([2, 5, 8, 0]),
+    Object.freeze([3, 1, 4, 2]),
+    Object.freeze([6, 7, 8, 9]),
+    Object.freeze([9, 0, 1, 2])
+  ]);
+  const MEMORY_KEYPAD_NUMBERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
+  const MEMORY_MODES = Object.freeze({ visible: "visible", hidden: "hidden" });
   const CHOICE_COUNT = 4;
   const WORDS_PER_PACK = 5;
   const LEVELS_PER_PACK = 2;
@@ -160,6 +169,8 @@
   const SAY_FIND_TOTAL_SCENARIOS = SAY_FIND_PACKS.length * SAY_FIND_SCENARIOS_PER_PACK;
   const ACTION_SCENARIOS_PER_GAME = ACTION_BASE_ROUNDS.length * LEVELS_PER_PACK;
   const NUMBER_SCENARIOS_PER_GAME = NUMBER_ROUNDS.length;
+  const MEMORY_CODE_LENGTH = 4;
+  const MEMORY_PEEK_MS = 2500;
   const EXIT_HOLD_MS = 1600;
   const NEXT_SCENARIO_DELAY_MS = 350;
   const SPEECH_FALLBACK_MS = 1200;
@@ -170,7 +181,9 @@
     sayFindPacks: "#/say-find",
     packBag: "#/pack-my-bag",
     actionGame: "#/who-is-doing-it",
-    numberGame: "#/numbers"
+    numberGame: "#/numbers",
+    memoryLock: "#/memory-lock",
+    memoryLockHidden: "#/memory-lock-hidden"
   });
   const GAMES = Object.freeze([
     Object.freeze({
@@ -204,6 +217,22 @@
       color: "#f97316",
       description: "Hear numbers and find them in order from 1 to 10.",
       actionLabel: "Count 1 to 10"
+    }),
+    Object.freeze({
+      id: "memory-lock",
+      title: "Memory Lock",
+      emoji: "🔒 1 2",
+      color: "#f59e0b",
+      description: "Look at a four-number lock code and type it back to open the lock.",
+      actionLabel: "Open locks"
+    }),
+    Object.freeze({
+      id: "memory-lock-hidden",
+      title: "Memory Lock Plus",
+      emoji: "🔒 ? 4",
+      color: "#ef4444",
+      description: "Peek at the code, remember the hidden number, and type all four numbers.",
+      actionLabel: "Try hidden code"
     })
   ]);
   const state = {
@@ -217,6 +246,12 @@
     bagScenarioIndex: 0,
     actionScenarioIndex: 0,
     numberScenarioIndex: 0,
+    memoryLockIndex: 0,
+    memoryMode: MEMORY_MODES.visible,
+    memoryInput: [],
+    isMemoryCodeVisible: true,
+    isMemoryOpen: false,
+    memoryPeekTimerId: 0,
     exitTimerId: 0,
     audioContext: null
   };
@@ -255,7 +290,20 @@
     numberGameChoiceGrid: document.getElementById("number-game-choice-grid"),
     numberGameHelperText: document.getElementById("number-game-helper-text"),
     numberGameProgress: document.getElementById("number-game-progress"),
-    numberGameParentExit: document.getElementById("number-game-parent-exit")
+    numberGameParentExit: document.getElementById("number-game-parent-exit"),
+    memoryLockScreen: document.getElementById("memory-lock-screen"),
+    memoryLockBackButton: document.getElementById("memory-lock-back-button"),
+    memoryLockCard: document.getElementById("memory-lock-card"),
+    memoryLockIcon: document.getElementById("memory-lock-icon"),
+    memoryLockStatus: document.getElementById("memory-lock-status"),
+    memoryLockEyebrow: document.getElementById("memory-lock-eyebrow"),
+    memoryLockTitle: document.getElementById("memory-lock-title"),
+    memoryLockProgress: document.getElementById("memory-lock-progress"),
+    memoryCodeDisplay: document.getElementById("memory-code-display"),
+    memoryInputDisplay: document.getElementById("memory-input-display"),
+    memoryLockHelperText: document.getElementById("memory-lock-helper-text"),
+    memoryKeypad: document.getElementById("memory-keypad"),
+    memoryLockParentExit: document.getElementById("memory-lock-parent-exit")
   };
   const progress = loadProgress();
   bindEvents();
@@ -267,15 +315,18 @@
     elements.packBagBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
     elements.actionGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
     elements.numberGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.memoryLockBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
     elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
+    elements.memoryLockCard.addEventListener("click", handleMemoryLockClick);
     window.addEventListener("hashchange", renderCurrentRoute);
     bindParentExit(elements.sayFindParentExit, () => navigateTo(ROUTES.sayFindPacks));
     bindParentExit(elements.packBagParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.actionGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.numberGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
     element.addEventListener("pointerdown", (event) => startParentExitHold(event, element, exitHandler));
@@ -311,6 +362,14 @@
     }
     if (hash === ROUTES.numberGame) {
       startNumberGame();
+      return;
+    }
+    if (hash === ROUTES.memoryLock) {
+      startMemoryLockGame(MEMORY_MODES.visible);
+      return;
+    }
+    if (hash === ROUTES.memoryLockHidden) {
+      startMemoryLockGame(MEMORY_MODES.hidden);
       return;
     }
     navigateTo(ROUTES.catalog, { replace: true });
@@ -373,7 +432,15 @@
       navigateTo(ROUTES.actionGame);
       return;
     }
-    navigateTo(ROUTES.numberGame);
+    if (gameId === "number-find") {
+      navigateTo(ROUTES.numberGame);
+      return;
+    }
+    if (gameId === "memory-lock") {
+      navigateTo(ROUTES.memoryLock);
+      return;
+    }
+    navigateTo(ROUTES.memoryLockHidden);
   }
   function renderPackPicker() {
     elements.packGrid.replaceChildren(...SAY_FIND_PACKS.map((pack, packIndex) => createPackCard(pack, packIndex)));
@@ -778,6 +845,150 @@
   function getCurrentNumberScenario() {
     return NUMBER_ROUNDS[state.numberScenarioIndex];
   }
+  function startMemoryLockGame(memoryMode) {
+    clearMemoryPeekTimer();
+    state.memoryMode = memoryMode;
+    state.memoryLockIndex = 0;
+    state.isAdvancing = false;
+    showScreen("memory-lock");
+    renderMemoryLockRound();
+  }
+  function renderMemoryLockRound() {
+    clearMemoryPeekTimer();
+    state.memoryInput = [];
+    state.isAdvancing = false;
+    state.isMemoryOpen = false;
+    state.isMemoryCodeVisible = state.memoryMode === MEMORY_MODES.visible;
+    elements.memoryLockEyebrow.textContent = state.memoryMode === MEMORY_MODES.hidden ? "Memory Lock Plus" : "Memory Lock";
+    elements.memoryLockTitle.textContent = state.memoryMode === MEMORY_MODES.hidden ? "Remember the hidden number" : "Open the lock";
+    elements.memoryLockProgress.textContent = `${state.memoryLockIndex + 1} / ${MEMORY_CODES.length}`;
+    elements.memoryLockIcon.textContent = "🔒";
+    elements.memoryLockStatus.textContent = "Locked";
+    elements.memoryLockCard.style.borderColor = state.memoryMode === MEMORY_MODES.hidden ? "#ef4444" : "#f59e0b";
+    elements.memoryLockHelperText.textContent = getMemoryInitialHelpText();
+    renderMemoryCodeDisplay();
+    renderMemoryInputDisplay();
+    renderMemoryKeypad();
+  }
+  function getMemoryInitialHelpText() {
+    if (state.memoryMode === MEMORY_MODES.hidden) {
+      return "Tap the lock to peek. One number will hide.";
+    }
+    return "Type the four visible numbers to open the lock.";
+  }
+  function handleMemoryLockClick() {
+    if (state.memoryMode !== MEMORY_MODES.hidden || state.isMemoryOpen) {
+      return;
+    }
+    revealMemoryCodeTemporarily("Watch the code, then type all four numbers.");
+  }
+  function renderMemoryCodeDisplay() {
+    const hiddenIndex = getMemoryHiddenIndex();
+    const codeDigits = getCurrentMemoryCode().map((digit, digitIndex) => {
+      const digitElement = document.createElement("span");
+      const isHidden = state.memoryMode === MEMORY_MODES.hidden && !state.isMemoryCodeVisible && !state.isMemoryOpen && digitIndex === hiddenIndex;
+      digitElement.className = `memory-digit ${isHidden ? "is-hidden" : ""}`;
+      digitElement.textContent = isHidden ? "?" : String(digit);
+      return digitElement;
+    });
+    elements.memoryCodeDisplay.replaceChildren(...codeDigits);
+  }
+  function renderMemoryInputDisplay() {
+    const inputSlots = Array.from({ length: MEMORY_CODE_LENGTH }, (_, index) => {
+      const slot = document.createElement("span");
+      slot.className = "memory-input-slot";
+      slot.textContent = state.memoryInput[index] === undefined ? "" : String(state.memoryInput[index]);
+      return slot;
+    });
+    elements.memoryInputDisplay.replaceChildren(...inputSlots);
+  }
+  function renderMemoryKeypad() {
+    const keys = MEMORY_KEYPAD_NUMBERS.map((number) => {
+      const button = document.createElement("button");
+      button.className = "memory-key";
+      button.type = "button";
+      button.textContent = String(number);
+      button.setAttribute("aria-label", `Type ${number}`);
+      button.addEventListener("click", () => handleMemoryNumberClick(number));
+      return button;
+    });
+    elements.memoryKeypad.replaceChildren(...keys);
+  }
+  function handleMemoryNumberClick(number) {
+    if (state.isAdvancing || state.isMemoryOpen || state.memoryInput.length >= MEMORY_CODE_LENGTH) {
+      return;
+    }
+    state.memoryInput.push(number);
+    renderMemoryInputDisplay();
+    if (state.memoryInput.length !== MEMORY_CODE_LENGTH) {
+      return;
+    }
+    if (hasMatchingMemoryInput()) {
+      openMemoryLock();
+      return;
+    }
+    resetMemoryInputAfterMiss();
+  }
+  function hasMatchingMemoryInput() {
+    const code = getCurrentMemoryCode();
+    return code.every((digit, index) => digit === state.memoryInput[index]);
+  }
+  function openMemoryLock() {
+    clearMemoryPeekTimer();
+    state.isAdvancing = true;
+    state.isMemoryOpen = true;
+    state.isMemoryCodeVisible = true;
+    elements.memoryLockIcon.textContent = "🔓";
+    elements.memoryLockStatus.textContent = "Opened!";
+    elements.memoryLockHelperText.textContent = "The lock opened!";
+    renderMemoryCodeDisplay();
+    playHappySound();
+    window.setTimeout(advanceMemoryLock, NEXT_SCENARIO_DELAY_MS + 450);
+  }
+  function resetMemoryInputAfterMiss() {
+    state.memoryInput = [];
+    renderMemoryInputDisplay();
+    if (state.memoryMode === MEMORY_MODES.hidden) {
+      revealMemoryCodeTemporarily("Try again. Watch the hidden number.");
+      return;
+    }
+    elements.memoryLockHelperText.textContent = "Try again. Type the code from the start.";
+  }
+  function revealMemoryCodeTemporarily(helperText) {
+    clearMemoryPeekTimer();
+    state.isMemoryCodeVisible = true;
+    elements.memoryLockHelperText.textContent = helperText;
+    renderMemoryCodeDisplay();
+    state.memoryPeekTimerId = window.setTimeout(() => {
+      state.isMemoryCodeVisible = false;
+      elements.memoryLockHelperText.textContent = "Now type the four numbers.";
+      renderMemoryCodeDisplay();
+    }, MEMORY_PEEK_MS);
+  }
+  function clearMemoryPeekTimer() {
+    window.clearTimeout(state.memoryPeekTimerId);
+    state.memoryPeekTimerId = 0;
+  }
+  function advanceMemoryLock() {
+    const isGameFinished = state.memoryLockIndex + 1 >= MEMORY_CODES.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, getMemoryGameId());
+      saveProgress(progress);
+      navigateTo(ROUTES.catalog);
+      return;
+    }
+    state.memoryLockIndex += 1;
+    renderMemoryLockRound();
+  }
+  function getCurrentMemoryCode() {
+    return MEMORY_CODES[state.memoryLockIndex];
+  }
+  function getMemoryHiddenIndex() {
+    return state.memoryLockIndex % MEMORY_CODE_LENGTH;
+  }
+  function getMemoryGameId() {
+    return state.memoryMode === MEMORY_MODES.hidden ? "memory-lock-hidden" : "memory-lock";
+  }
   function shuffleItems(items) {
     const shuffledItems = [...items];
     for (let i = shuffledItems.length - 1; i > 0; i -= 1) {
@@ -852,6 +1063,10 @@
     elements.packBagScreen.classList.toggle("screen-active", screenName === "pack-bag");
     elements.actionGameScreen.classList.toggle("screen-active", screenName === "action-game");
     elements.numberGameScreen.classList.toggle("screen-active", screenName === "number-game");
+    elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
+    if (screenName !== "memory-lock") {
+      clearMemoryPeekTimer();
+    }
     window.speechSynthesis?.cancel();
   }
   function startParentExitHold(event, element, exitHandler) {
@@ -909,7 +1124,8 @@
     getSayFindScenarioCount: () => SAY_FIND_TOTAL_SCENARIOS,
     getPackBagScenarioCount: () => BAG_ROUNDS.length,
     getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME,
-    getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME
+    getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME,
+    getMemoryLockCount: () => MEMORY_CODES.length
   });
   window.SayFindEnglishGame = Object.freeze({
     getPackCount: () => SAY_FIND_PACKS.length,
