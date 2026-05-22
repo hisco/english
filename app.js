@@ -152,6 +152,12 @@
   const SPEECH_FALLBACK_MS = 1200;
   const STORAGE_KEY = "little-english-games-progress";
   const LEGACY_STORAGE_KEY = "say-find-english-progress";
+  const ROUTES = Object.freeze({
+    catalog: "#/catalog",
+    sayFindPacks: "#/say-find",
+    packBag: "#/pack-my-bag",
+    actionGame: "#/who-is-doing-it"
+  });
   const GAMES = Object.freeze([
     Object.freeze({
       id: "say-find",
@@ -198,12 +204,14 @@
     gameCatalog: document.getElementById("game-catalog"),
     catalogBackButton: document.getElementById("catalog-back-button"),
     packGrid: document.getElementById("pack-grid"),
+    sayFindBackButton: document.getElementById("say-find-back-button"),
     sayFindPromptCard: document.getElementById("say-find-prompt-card"),
     sayFindChoiceGrid: document.getElementById("say-find-choice-grid"),
     sayFindHelperText: document.getElementById("say-find-helper-text"),
     sayFindPackTheme: document.getElementById("say-find-pack-theme"),
     sayFindProgress: document.getElementById("say-find-progress"),
     sayFindParentExit: document.getElementById("say-find-parent-exit"),
+    packBagBackButton: document.getElementById("pack-bag-back-button"),
     packBagPromptCard: document.getElementById("pack-bag-prompt-card"),
     packBagPromptLabel: document.getElementById("pack-bag-prompt-label"),
     packBagChoiceGrid: document.getElementById("pack-bag-choice-grid"),
@@ -211,6 +219,7 @@
     packBagProgress: document.getElementById("pack-bag-progress"),
     packBagParentExit: document.getElementById("pack-bag-parent-exit"),
     actionGameScreen: document.getElementById("action-game-screen"),
+    actionGameBackButton: document.getElementById("action-game-back-button"),
     actionGamePromptCard: document.getElementById("action-game-prompt-card"),
     actionGameChoiceGrid: document.getElementById("action-game-choice-grid"),
     actionGameHelperText: document.getElementById("action-game-helper-text"),
@@ -218,23 +227,77 @@
     actionGameParentExit: document.getElementById("action-game-parent-exit")
   };
   const progress = loadProgress();
-  renderCatalog();
   bindEvents();
+  renderCurrentRoute();
   registerServiceWorker();
   function bindEvents() {
-    elements.catalogBackButton.addEventListener("click", renderCatalog);
+    elements.catalogBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.sayFindBackButton.addEventListener("click", () => navigateTo(ROUTES.sayFindPacks));
+    elements.packBagBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.actionGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
-    bindParentExit(elements.sayFindParentExit, renderPackPicker);
-    bindParentExit(elements.packBagParentExit, renderCatalog);
-    bindParentExit(elements.actionGameParentExit, renderCatalog);
+    window.addEventListener("hashchange", renderCurrentRoute);
+    bindParentExit(elements.sayFindParentExit, () => navigateTo(ROUTES.sayFindPacks));
+    bindParentExit(elements.packBagParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.actionGameParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
     element.addEventListener("pointerdown", (event) => startParentExitHold(event, element, exitHandler));
     element.addEventListener("pointerup", () => cancelParentExitHold(element));
     element.addEventListener("pointercancel", () => cancelParentExitHold(element));
     element.addEventListener("pointerleave", () => cancelParentExitHold(element));
+  }
+  function renderCurrentRoute() {
+    const hash = window.location.hash || ROUTES.catalog;
+    if (!window.location.hash) {
+      navigateTo(ROUTES.catalog, { replace: true });
+      return;
+    }
+    if (hash === ROUTES.catalog || hash === "#/") {
+      renderCatalog();
+      return;
+    }
+    if (hash === ROUTES.sayFindPacks) {
+      renderPackPicker();
+      return;
+    }
+    if (hash.startsWith(`${ROUTES.sayFindPacks}/`)) {
+      startSayFindPack(getSayFindPackIndexFromRoute(hash));
+      return;
+    }
+    if (hash === ROUTES.packBag) {
+      startPackBagGame();
+      return;
+    }
+    if (hash === ROUTES.actionGame) {
+      startActionGame();
+      return;
+    }
+    navigateTo(ROUTES.catalog, { replace: true });
+  }
+  function navigateTo(hash, options = {}) {
+    if (window.location.hash === hash) {
+      renderCurrentRoute();
+      return;
+    }
+    if (options.replace) {
+      window.history.replaceState(null, "", hash);
+      renderCurrentRoute();
+      return;
+    }
+    window.location.hash = hash;
+  }
+  function getSayFindPackRoute(packIndex) {
+    return `${ROUTES.sayFindPacks}/${packIndex}`;
+  }
+  function getSayFindPackIndexFromRoute(hash) {
+    const packIndex = Number(hash.replace(`${ROUTES.sayFindPacks}/`, ""));
+    if (Number.isInteger(packIndex) && packIndex >= 0 && packIndex < SAY_FIND_PACKS.length) {
+      return packIndex;
+    }
+    return 0;
   }
   function renderCatalog() {
     elements.gameCatalog.replaceChildren(...GAMES.map(createCatalogCard));
@@ -247,7 +310,7 @@
     button.type = "button";
     button.style.borderColor = game.color;
     button.setAttribute("aria-label", `${game.title}. ${game.description}`);
-    button.addEventListener("click", () => startGame(game.id));
+    button.addEventListener("click", () => navigateToGame(game.id));
     button.innerHTML = `
       <div class="catalog-emoji-row" aria-hidden="true">${game.emoji}</div>
       <div class="catalog-title-row">
@@ -259,16 +322,16 @@
     `;
     return button;
   }
-  function startGame(gameId) {
+  function navigateToGame(gameId) {
     if (gameId === "say-find") {
-      renderPackPicker();
+      navigateTo(ROUTES.sayFindPacks);
       return;
     }
     if (gameId === "pack-my-bag") {
-      startPackBagGame();
+      navigateTo(ROUTES.packBag);
       return;
     }
-    startActionGame();
+    navigateTo(ROUTES.actionGame);
   }
   function renderPackPicker() {
     elements.packGrid.replaceChildren(...SAY_FIND_PACKS.map((pack, packIndex) => createPackCard(pack, packIndex)));
@@ -281,7 +344,7 @@
     button.type = "button";
     button.style.borderColor = pack.color;
     button.setAttribute("aria-label", `${pack.title}. ${isCompleted ? "Finished" : "Not finished yet"}.`);
-    button.addEventListener("click", () => startSayFindPack(packIndex));
+    button.addEventListener("click", () => navigateTo(getSayFindPackRoute(packIndex)));
     button.innerHTML = `
       <div class="pack-emoji-row" aria-hidden="true">${pack.words.map((item) => item.emoji).join(" ")}</div>
       <div class="pack-title-row">
@@ -373,7 +436,7 @@
     const isPackFinished = state.sayFindScenarioIndex + 1 >= SAY_FIND_SCENARIOS_PER_PACK;
     if (isPackFinished) {
       completeSayFindPack();
-      renderPackPicker();
+      navigateTo(ROUTES.sayFindPacks);
       return;
     }
     state.sayFindScenarioIndex += 1;
@@ -470,7 +533,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "pack-my-bag");
       saveProgress(progress);
-      renderCatalog();
+      navigateTo(ROUTES.catalog);
       return;
     }
     state.bagScenarioIndex += 1;
@@ -570,7 +633,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "who-is-doing-it");
       saveProgress(progress);
-      renderCatalog();
+      navigateTo(ROUTES.catalog);
       return;
     }
     state.actionScenarioIndex += 1;

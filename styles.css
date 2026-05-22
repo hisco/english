@@ -219,6 +219,14 @@ h1 {
   padding: 0.5rem 0 1rem;
 }
 
+.header-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
 .progress-pill {
   border-radius: 999px;
   background: var(--primary);
@@ -351,6 +359,9 @@ h1 {
   .game-header {
     align-items: stretch;
     flex-direction: column;
+  }
+  .header-actions {
+    justify-content: flex-start;
   }
   .progress-pill {
     justify-self: start;
