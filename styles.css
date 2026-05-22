@@ -263,14 +263,16 @@ h1 {
 
 .prompt-card,
 .bag-prompt-card,
-.action-prompt-card {
+.action-prompt-card,
+.number-prompt-card {
   width: min(25rem, 90vw);
   min-height: min(48vh, 22rem);
   border-color: var(--sun);
 }
 
 .bag-prompt-card,
-.action-prompt-card {
+.action-prompt-card,
+.number-prompt-card {
   gap: 0.5rem;
   min-height: min(48vh, 20rem);
 }
@@ -306,6 +308,17 @@ h1 {
   justify-content: center;
 }
 
+.number-symbol {
+  color: var(--primary-dark);
+  font-size: clamp(6rem, 24vw, 13rem);
+  font-weight: 900;
+  line-height: 0.9;
+}
+
+.choice-card .number-symbol {
+  font-size: clamp(4.5rem, 16vw, 8rem);
+}
+
 .sound-only {
   color: var(--primary);
   font-size: clamp(5rem, 22vw, 12rem);
@@ -338,7 +351,8 @@ h1 {
 }
 
 .pack-bag-screen .choice-card.is-found,
-.action-game-screen .choice-card.is-found {
+.action-game-screen .choice-card.is-found,
+.number-game-screen .choice-card.is-found {
   transform: translateY(-0.8rem) scale(0.96);
 }
 

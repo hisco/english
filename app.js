@@ -141,12 +141,25 @@
     Object.freeze({ phrase: "fish swims", noun: "fish", verb: "swims", nounEmoji: "🐟", verbEmoji: "🌊" }),
     Object.freeze({ phrase: "monkey eats", noun: "monkey", verb: "eats", nounEmoji: "🐵", verbEmoji: "🍌" })
   ]);
+  const NUMBER_ROUNDS = Object.freeze([
+    Object.freeze({ number: 1, word: "one" }),
+    Object.freeze({ number: 2, word: "two" }),
+    Object.freeze({ number: 3, word: "three" }),
+    Object.freeze({ number: 4, word: "four" }),
+    Object.freeze({ number: 5, word: "five" }),
+    Object.freeze({ number: 6, word: "six" }),
+    Object.freeze({ number: 7, word: "seven" }),
+    Object.freeze({ number: 8, word: "eight" }),
+    Object.freeze({ number: 9, word: "nine" }),
+    Object.freeze({ number: 10, word: "ten" })
+  ]);
   const CHOICE_COUNT = 4;
   const WORDS_PER_PACK = 5;
   const LEVELS_PER_PACK = 2;
   const SAY_FIND_SCENARIOS_PER_PACK = WORDS_PER_PACK * LEVELS_PER_PACK;
   const SAY_FIND_TOTAL_SCENARIOS = SAY_FIND_PACKS.length * SAY_FIND_SCENARIOS_PER_PACK;
   const ACTION_SCENARIOS_PER_GAME = ACTION_BASE_ROUNDS.length * LEVELS_PER_PACK;
+  const NUMBER_SCENARIOS_PER_GAME = NUMBER_ROUNDS.length;
   const EXIT_HOLD_MS = 1600;
   const NEXT_SCENARIO_DELAY_MS = 350;
   const SPEECH_FALLBACK_MS = 1200;
@@ -156,7 +169,8 @@
     catalog: "#/catalog",
     sayFindPacks: "#/say-find",
     packBag: "#/pack-my-bag",
-    actionGame: "#/who-is-doing-it"
+    actionGame: "#/who-is-doing-it",
+    numberGame: "#/numbers"
   });
   const GAMES = Object.freeze([
     Object.freeze({
@@ -182,6 +196,14 @@
       color: "#38bdf8",
       description: "Listen for a noun and a verb, then find who is doing the action.",
       actionLabel: "Hear actions"
+    }),
+    Object.freeze({
+      id: "number-find",
+      title: "Number Find",
+      emoji: "1 2 3",
+      color: "#f97316",
+      description: "Hear numbers and find them in order from 1 to 10.",
+      actionLabel: "Count 1 to 10"
     })
   ]);
   const state = {
@@ -190,9 +212,11 @@
     hasRevealedSayFindChoices: false,
     hasRevealedBagChoices: false,
     hasRevealedActionChoices: false,
+    hasRevealedNumberChoices: false,
     isAdvancing: false,
     bagScenarioIndex: 0,
     actionScenarioIndex: 0,
+    numberScenarioIndex: 0,
     exitTimerId: 0,
     audioContext: null
   };
@@ -224,7 +248,14 @@
     actionGameChoiceGrid: document.getElementById("action-game-choice-grid"),
     actionGameHelperText: document.getElementById("action-game-helper-text"),
     actionGameProgress: document.getElementById("action-game-progress"),
-    actionGameParentExit: document.getElementById("action-game-parent-exit")
+    actionGameParentExit: document.getElementById("action-game-parent-exit"),
+    numberGameScreen: document.getElementById("number-game-screen"),
+    numberGameBackButton: document.getElementById("number-game-back-button"),
+    numberGamePromptCard: document.getElementById("number-game-prompt-card"),
+    numberGameChoiceGrid: document.getElementById("number-game-choice-grid"),
+    numberGameHelperText: document.getElementById("number-game-helper-text"),
+    numberGameProgress: document.getElementById("number-game-progress"),
+    numberGameParentExit: document.getElementById("number-game-parent-exit")
   };
   const progress = loadProgress();
   bindEvents();
@@ -235,13 +266,16 @@
     elements.sayFindBackButton.addEventListener("click", () => navigateTo(ROUTES.sayFindPacks));
     elements.packBagBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
     elements.actionGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.numberGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
+    elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
     window.addEventListener("hashchange", renderCurrentRoute);
     bindParentExit(elements.sayFindParentExit, () => navigateTo(ROUTES.sayFindPacks));
     bindParentExit(elements.packBagParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.actionGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.numberGameParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
     element.addEventListener("pointerdown", (event) => startParentExitHold(event, element, exitHandler));
@@ -273,6 +307,10 @@
     }
     if (hash === ROUTES.actionGame) {
       startActionGame();
+      return;
+    }
+    if (hash === ROUTES.numberGame) {
+      startNumberGame();
       return;
     }
     navigateTo(ROUTES.catalog, { replace: true });
@@ -331,7 +369,11 @@
       navigateTo(ROUTES.packBag);
       return;
     }
-    navigateTo(ROUTES.actionGame);
+    if (gameId === "who-is-doing-it") {
+      navigateTo(ROUTES.actionGame);
+      return;
+    }
+    navigateTo(ROUTES.numberGame);
   }
   function renderPackPicker() {
     elements.packGrid.replaceChildren(...SAY_FIND_PACKS.map((pack, packIndex) => createPackCard(pack, packIndex)));
@@ -652,6 +694,90 @@
       hasPicture
     });
   }
+  function startNumberGame() {
+    state.numberScenarioIndex = 0;
+    state.isAdvancing = false;
+    showScreen("number-game");
+    renderNumberScenario();
+  }
+  function renderNumberScenario() {
+    const scenario = getCurrentNumberScenario();
+    state.hasRevealedNumberChoices = false;
+    state.isAdvancing = false;
+    elements.numberGameProgress.textContent = `${state.numberScenarioIndex + 1} / ${NUMBER_SCENARIOS_PER_GAME}`;
+    elements.numberGamePromptCard.style.borderColor = "#f97316";
+    elements.numberGamePromptCard.setAttribute("aria-label", `Hear ${scenario.word}`);
+    elements.numberGamePromptCard.replaceChildren(createNumberCardContent(scenario));
+    elements.numberGameChoiceGrid.replaceChildren();
+    elements.numberGameHelperText.textContent = "Tap the big number to hear it.";
+  }
+  function createNumberCardContent(item) {
+    const fragment = document.createDocumentFragment();
+    const numberElement = document.createElement("span");
+    const label = document.createElement("span");
+    numberElement.className = "number-symbol";
+    numberElement.setAttribute("aria-hidden", "true");
+    numberElement.textContent = String(item.number);
+    label.className = "word-label";
+    label.textContent = item.word;
+    fragment.append(numberElement, label);
+    return fragment;
+  }
+  function handleNumberPromptClick() {
+    const scenario = getCurrentNumberScenario();
+    void speakText(scenario.word);
+    if (state.hasRevealedNumberChoices) {
+      return;
+    }
+    state.hasRevealedNumberChoices = true;
+    elements.numberGameHelperText.textContent = "Tap the numbers. Every number speaks.";
+    renderNumberChoices(scenario);
+  }
+  function renderNumberChoices(scenario) {
+    const choiceCards = createNumberChoices(scenario).map((choice) => createNumberChoiceCard(choice, scenario.number));
+    elements.numberGameChoiceGrid.replaceChildren(...choiceCards);
+  }
+  function createNumberChoices(scenario) {
+    const firstNumber = Math.min(Math.max(scenario.number - 1, 1), NUMBER_ROUNDS.length - CHOICE_COUNT + 1);
+    return NUMBER_ROUNDS.slice(firstNumber - 1, firstNumber - 1 + CHOICE_COUNT);
+  }
+  function createNumberChoiceCard(choice, answerNumber) {
+    const button = document.createElement("button");
+    button.className = "card choice-card";
+    button.type = "button";
+    button.setAttribute("aria-label", choice.word);
+    button.append(createNumberCardContent(choice));
+    button.addEventListener("click", () => handleNumberChoiceClick(choice, answerNumber, button));
+    return button;
+  }
+  async function handleNumberChoiceClick(choice, answerNumber, button) {
+    if (state.isAdvancing) {
+      return;
+    }
+    if (choice.number !== answerNumber) {
+      await speakText(choice.word);
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(choice.word);
+    playHappySound();
+    window.setTimeout(advanceNumberScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceNumberScenario() {
+    const isGameFinished = state.numberScenarioIndex + 1 >= NUMBER_SCENARIOS_PER_GAME;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "number-find");
+      saveProgress(progress);
+      navigateTo(ROUTES.catalog);
+      return;
+    }
+    state.numberScenarioIndex += 1;
+    renderNumberScenario();
+  }
+  function getCurrentNumberScenario() {
+    return NUMBER_ROUNDS[state.numberScenarioIndex];
+  }
   function shuffleItems(items) {
     const shuffledItems = [...items];
     for (let i = shuffledItems.length - 1; i > 0; i -= 1) {
@@ -725,6 +851,7 @@
     elements.sayFindScreen.classList.toggle("screen-active", screenName === "say-find");
     elements.packBagScreen.classList.toggle("screen-active", screenName === "pack-bag");
     elements.actionGameScreen.classList.toggle("screen-active", screenName === "action-game");
+    elements.numberGameScreen.classList.toggle("screen-active", screenName === "number-game");
     window.speechSynthesis?.cancel();
   }
   function startParentExitHold(event, element, exitHandler) {
@@ -781,7 +908,8 @@
     getSayFindPackCount: () => SAY_FIND_PACKS.length,
     getSayFindScenarioCount: () => SAY_FIND_TOTAL_SCENARIOS,
     getPackBagScenarioCount: () => BAG_ROUNDS.length,
-    getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME
+    getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME,
+    getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME
   });
   window.SayFindEnglishGame = Object.freeze({
     getPackCount: () => SAY_FIND_PACKS.length,
