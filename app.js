@@ -460,7 +460,13 @@
     return `Pack the ${word}`;
   }
   function getAllPackBagChoiceItems() {
-    return BAG_ROUNDS.concat(getAllSayFindWords());
+    const uniqueItems = new Map();
+    BAG_ROUNDS.concat(getAllSayFindWords()).forEach((item) => {
+      if (!uniqueItems.has(item.word)) {
+        uniqueItems.set(item.word, item);
+      }
+    });
+    return Array.from(uniqueItems.values());
   }
   function shuffleItems(items) {
     const shuffledItems = [...items];
