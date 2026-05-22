@@ -254,13 +254,15 @@ h1 {
 }
 
 .prompt-card,
-.bag-prompt-card {
+.bag-prompt-card,
+.action-prompt-card {
   width: min(25rem, 90vw);
   min-height: min(48vh, 22rem);
   border-color: var(--sun);
 }
 
-.bag-prompt-card {
+.bag-prompt-card,
+.action-prompt-card {
   gap: 0.5rem;
   min-height: min(48vh, 20rem);
 }
@@ -284,9 +286,16 @@ h1 {
   font-size: clamp(6rem, 24vw, 13rem);
 }
 
-.bag-emoji {
+.bag-emoji,
+.action-pair {
   font-size: clamp(6rem, 22vw, 12rem);
   line-height: 1;
+}
+
+.action-pair {
+  display: flex;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  justify-content: center;
 }
 
 .sound-only {
@@ -320,7 +329,8 @@ h1 {
   opacity: 0.78;
 }
 
-.pack-bag-screen .choice-card.is-found {
+.pack-bag-screen .choice-card.is-found,
+.action-game-screen .choice-card.is-found {
   transform: translateY(-0.8rem) scale(0.96);
 }
 
