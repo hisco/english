@@ -11,6 +11,18 @@ A dependency-free static web catalog of gentle English listening games for young
 - **Memory Lock**: copy four visible numbers to open a lock.
 - **Memory Lock Plus**: peek at four numbers, remember the hidden one, and type the code to open the lock.
 
+
+
+## Levels
+
+The catalog includes a global **Settings** screen that affects every game:
+
+- **Level 1: Learn** keeps the original guided behavior: predictable order, smaller pools, and simpler choices.
+- **Level 2: Mix** adds more randomness: larger word/object/action pools, shuffled rounds, randomized number choices, and random memory lock codes.
+
+Wrong taps and failed memory attempts remain gentle: no penalties, no negative sounds, and the child can keep trying.
+
+
 ## Run locally
 
 Serve the folder with any static web server:
@@ -45,4 +57,3 @@ After the GitHub Pages site is live, Android users can install it like an app:
 4. Launch **English Games** from the home screen.
 
 The installed app opens in standalone mode without the browser address bar and keeps working offline after the first successful load.
-

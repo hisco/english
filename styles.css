@@ -92,6 +92,59 @@ h1 {
   font-weight: 700;
 }
 
+
+.catalog-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.level-badge {
+  border-radius: 999px;
+  background: #ede9fe;
+  color: var(--primary-dark);
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 900;
+  padding: 0.7rem 1rem;
+}
+
+.settings-grid {
+  display: grid;
+  gap: clamp(1rem, 2.2vw, 1.5rem);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+
+.settings-card {
+  border: 0.35rem solid var(--card-border);
+  border-radius: 2rem;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  gap: 0.75rem;
+  min-height: 12rem;
+  padding: 1.25rem;
+  text-align: left;
+}
+
+.settings-card.is-selected {
+  border-color: var(--green);
+}
+
+.settings-title {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 900;
+}
+
+.settings-copy {
+  color: var(--muted);
+  font-size: clamp(1rem, 2.5vw, 1.35rem);
+  font-weight: 800;
+}
+
 .catalog-grid,
 .pack-grid {
   display: grid;
