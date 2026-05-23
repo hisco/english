@@ -1238,9 +1238,11 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
   }
   function showCompletionCelebration(afterCelebration) {
     window.clearTimeout(state.celebrationTimerId);
-    elements.celebrationMessage.textContent = getRandomCelebrationMessage();
+    const celebrationMessage = getRandomCelebrationMessage();
+    elements.celebrationMessage.textContent = celebrationMessage;
     renderConfetti();
     elements.celebrationOverlay.hidden = false;
+    void speakText(celebrationMessage);
     state.celebrationTimerId = window.setTimeout(() => {
       hideCompletionCelebration();
       afterCelebration();
