@@ -500,6 +500,11 @@
   }
   function bindViewportGuards() {
     let lastTouchEndTime = 0;
+    updateAppViewportHeight();
+    window.addEventListener("resize", updateAppViewportHeight);
+    window.addEventListener("orientationchange", updateAppViewportHeight);
+    window.visualViewport?.addEventListener("resize", updateAppViewportHeight);
+    window.visualViewport?.addEventListener("scroll", updateAppViewportHeight);
     document.addEventListener("gesturestart", preventGestureDefault, { passive: false });
     document.addEventListener("gesturechange", preventGestureDefault, { passive: false });
     document.addEventListener("gestureend", preventGestureDefault, { passive: false });
@@ -520,6 +525,10 @@
         event.preventDefault();
       }
     }, { passive: false });
+  }
+  function updateAppViewportHeight() {
+    const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight);
+    document.documentElement.style.setProperty("--app-viewport-height", `${viewportHeight}px`);
   }
   function preventGestureDefault(event) {
     event.preventDefault();
@@ -1527,6 +1536,9 @@
     oscillator.stop(options.startTime + 0.2);
   }
   function showScreen(screenName) {
+    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "memory-lock"].includes(screenName);
+    updateAppViewportHeight();
+    document.body.classList.toggle("is-game-active", isGameScreen);
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
     elements.settingsScreen.classList.toggle("screen-active", screenName === "settings");
     elements.packPickerScreen.classList.toggle("screen-active", screenName === "pack-picker");
