@@ -17,6 +17,15 @@ A dependency-free static web catalog of gentle English listening games for young
 
 When a child completes a game, the app shows a short confetti celebration and a random positive message such as "You are the winner!" or "What a champ!" before returning to the catalog or pack picker.
 
+## Levels
+
+The catalog includes a global **Settings** screen that affects every game:
+
+- **Level 1: Learn** keeps the original guided behavior: predictable order, smaller pools, and simpler choices.
+- **Level 2: Mix** adds more randomness: larger word/object/action pools, shuffled rounds, randomized number choices, and random memory lock codes.
+
+Wrong taps and failed memory attempts remain gentle: no penalties, no negative sounds, and the child can keep trying.
+
 
 ## Run locally
 

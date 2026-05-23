@@ -177,6 +177,96 @@
   const CONFETTI_COLORS = Object.freeze(["#facc15", "#38bdf8", "#f472b6", "#22c55e", "#fb923c", "#a78bfa"]);
   const CONFETTI_COUNT = 48;
   const CELEBRATION_DURATION_MS = 2300;
+const LEVELS = Object.freeze({ learn: 1, mix: 2 });
+  const SAY_FIND_LEVEL_TWO_EXTRA_WORDS = Object.freeze({
+    "farm-animals": Object.freeze([
+      Object.freeze({ word: "duck", emoji: "🦆" }),
+      Object.freeze({ word: "goat", emoji: "🐐" }),
+      Object.freeze({ word: "donkey", emoji: "🫏" }),
+      Object.freeze({ word: "rooster", emoji: "🐓" }),
+      Object.freeze({ word: "turkey", emoji: "🦃" })
+    ]),
+    "wild-animals": Object.freeze([
+      Object.freeze({ word: "giraffe", emoji: "🦒" }),
+      Object.freeze({ word: "bear", emoji: "🐻" }),
+      Object.freeze({ word: "fox", emoji: "🦊" }),
+      Object.freeze({ word: "panda", emoji: "🐼" }),
+      Object.freeze({ word: "kangaroo", emoji: "🦘" })
+    ]),
+    vehicles: Object.freeze([
+      Object.freeze({ word: "bicycle", emoji: "🚲" }),
+      Object.freeze({ word: "taxi", emoji: "🚕" }),
+      Object.freeze({ word: "truck", emoji: "🚚" }),
+      Object.freeze({ word: "boat", emoji: "⛵" }),
+      Object.freeze({ word: "airplane", emoji: "✈️" })
+    ]),
+    food: Object.freeze([
+      Object.freeze({ word: "carrot", emoji: "🥕" }),
+      Object.freeze({ word: "cheese", emoji: "🧀" }),
+      Object.freeze({ word: "grapes", emoji: "🍇" }),
+      Object.freeze({ word: "strawberry", emoji: "🍓" }),
+      Object.freeze({ word: "watermelon", emoji: "🍉" })
+    ]),
+    dinosaurs: Object.freeze([
+      Object.freeze({ word: "sauropod", emoji: "🦕" }),
+      Object.freeze({ word: "raptor", emoji: "🦖" }),
+      Object.freeze({ word: "fossil", emoji: "🪨" }),
+      Object.freeze({ word: "leaf", emoji: "🍃" }),
+      Object.freeze({ word: "meteor", emoji: "☄️" })
+    ]),
+    ocean: Object.freeze([
+      Object.freeze({ word: "dolphin", emoji: "🐬" }),
+      Object.freeze({ word: "shark", emoji: "🦈" }),
+      Object.freeze({ word: "lobster", emoji: "🦞" }),
+      Object.freeze({ word: "seal", emoji: "🦭" }),
+      Object.freeze({ word: "starfish", emoji: "⭐" })
+    ]),
+    pets: Object.freeze([
+      Object.freeze({ word: "hamster", emoji: "🐹" }),
+      Object.freeze({ word: "mouse", emoji: "🐭" }),
+      Object.freeze({ word: "fish", emoji: "🐟" }),
+      Object.freeze({ word: "puppy", emoji: "🐕" }),
+      Object.freeze({ word: "kitten", emoji: "🐈" })
+    ]),
+    toys: Object.freeze([
+      Object.freeze({ word: "robot", emoji: "🤖" }),
+      Object.freeze({ word: "yo-yo", emoji: "🪀" }),
+      Object.freeze({ word: "doll", emoji: "🪆" }),
+      Object.freeze({ word: "puzzle", emoji: "🧩" }),
+      Object.freeze({ word: "drum", emoji: "🥁" })
+    ]),
+    nature: Object.freeze([
+      Object.freeze({ word: "cloud", emoji: "☁️" }),
+      Object.freeze({ word: "snow", emoji: "❄️" }),
+      Object.freeze({ word: "mountain", emoji: "⛰️" }),
+      Object.freeze({ word: "fire", emoji: "🔥" }),
+      Object.freeze({ word: "water", emoji: "💧" })
+    ]),
+    home: Object.freeze([
+      Object.freeze({ word: "door", emoji: "🚪" }),
+      Object.freeze({ word: "window", emoji: "🪟" }),
+      Object.freeze({ word: "sofa", emoji: "🛋️" }),
+      Object.freeze({ word: "clock", emoji: "🕘" }),
+      Object.freeze({ word: "toothbrush", emoji: "🪥" })
+    ])
+  });
+  const BAG_LEVEL_TWO_ITEMS = Object.freeze([
+    Object.freeze({ word: "pencil", emoji: "✏️" }),
+    Object.freeze({ word: "shoes", emoji: "👟" }),
+    Object.freeze({ word: "bottle", emoji: "🍼" }),
+    Object.freeze({ word: "hat", emoji: "🧢" }),
+    Object.freeze({ word: "key", emoji: "🔑" }),
+    Object.freeze({ word: "spoon", emoji: "🥄" }),
+    Object.freeze({ word: "cup", emoji: "🥤" }),
+    Object.freeze({ word: "star", emoji: "⭐" })
+  ]);
+  const ACTION_LEVEL_TWO_ROUNDS = Object.freeze([
+    Object.freeze({ phrase: "cow jumps", noun: "cow", verb: "jumps", nounEmoji: "🐮", verbEmoji: "⬆️" }),
+    Object.freeze({ phrase: "duck walks", noun: "duck", verb: "walks", nounEmoji: "🦆", verbEmoji: "🚶" }),
+    Object.freeze({ phrase: "baby laughs", noun: "baby", verb: "laughs", nounEmoji: "👶", verbEmoji: "😄" }),
+    Object.freeze({ phrase: "horse drinks", noun: "horse", verb: "drinks", nounEmoji: "🐴", verbEmoji: "💧" }),
+    Object.freeze({ phrase: "lion roars", noun: "lion", verb: "roars", nounEmoji: "🦁", verbEmoji: "📣" })
+  ]);
   const CHOICE_COUNT = 4;
   const WORDS_PER_PACK = 5;
   const LEVELS_PER_PACK = 2;
@@ -193,6 +283,7 @@
   const LEGACY_STORAGE_KEY = "say-find-english-progress";
   const ROUTES = Object.freeze({
     catalog: "#/catalog",
+    settings: "#/settings",
     sayFindPacks: "#/say-find",
     packBag: "#/pack-my-bag",
     actionGame: "#/who-is-doing-it",
@@ -253,6 +344,12 @@
   const state = {
     sayFindPackIndex: 0,
     sayFindScenarioIndex: 0,
+    sayFindScenarios: [],
+    bagScenarios: [],
+    actionScenarios: [],
+    numberScenarios: [],
+    memoryCodes: [],
+    memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
     hasRevealedBagChoices: false,
     hasRevealedActionChoices: false,
@@ -273,10 +370,16 @@
   };
   const elements = {
     catalogScreen: document.getElementById("catalog-screen"),
+    settingsScreen: document.getElementById("settings-screen"),
     packPickerScreen: document.getElementById("pack-picker-screen"),
     sayFindScreen: document.getElementById("say-find-screen"),
     packBagScreen: document.getElementById("pack-bag-screen"),
     gameCatalog: document.getElementById("game-catalog"),
+    levelBadge: document.getElementById("level-badge"),
+    settingsButton: document.getElementById("settings-button"),
+    settingsBackButton: document.getElementById("settings-back-button"),
+    levelOneButton: document.getElementById("level-one-button"),
+    levelTwoButton: document.getElementById("level-two-button"),
     catalogBackButton: document.getElementById("catalog-back-button"),
     packGrid: document.getElementById("pack-grid"),
     sayFindBackButton: document.getElementById("say-find-back-button"),
@@ -329,6 +432,10 @@
   renderCurrentRoute();
   registerServiceWorker();
   function bindEvents() {
+    elements.settingsButton.addEventListener("click", () => navigateTo(ROUTES.settings));
+    elements.settingsBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.levelOneButton.addEventListener("click", () => setGameLevel(LEVELS.learn));
+    elements.levelTwoButton.addEventListener("click", () => setGameLevel(LEVELS.mix));
     elements.catalogBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindBackButton.addEventListener("click", () => navigateTo(ROUTES.sayFindPacks));
     elements.packBagBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
@@ -361,6 +468,10 @@
     }
     if (hash === ROUTES.catalog || hash === "#/") {
       renderCatalog();
+      return;
+    }
+    if (hash === ROUTES.settings) {
+      renderSettings();
       return;
     }
     if (hash === ROUTES.sayFindPacks) {
@@ -422,8 +533,28 @@
     return 0;
   }
   function renderCatalog() {
+    updateLevelBadge();
     elements.gameCatalog.replaceChildren(...GAMES.map(createCatalogCard));
     showScreen("catalog");
+  }
+  function renderSettings() {
+    elements.levelOneButton.classList.toggle("is-selected", progress.level === LEVELS.learn);
+    elements.levelTwoButton.classList.toggle("is-selected", progress.level === LEVELS.mix);
+    showScreen("settings");
+  }
+  function setGameLevel(level) {
+    progress.level = level;
+    saveProgress(progress);
+    renderSettings();
+  }
+  function updateLevelBadge() {
+    elements.levelBadge.textContent = progress.level === LEVELS.mix ? "Level 2: Mix" : "Level 1: Learn";
+  }
+  function isLevelTwo() {
+    return progress.level === LEVELS.mix;
+  }
+  function getLevelLabel() {
+    return isLevelTwo() ? "Level 2" : "Level 1";
   }
   function createCatalogCard(game) {
     const button = document.createElement("button");
@@ -474,24 +605,26 @@
   function createPackCard(pack, packIndex) {
     const button = document.createElement("button");
     const isCompleted = progress.completedSayFindPackIds.includes(pack.id);
+    const packWords = getSayFindPackWords(pack);
     button.className = "pack-card";
     button.type = "button";
     button.style.borderColor = pack.color;
     button.setAttribute("aria-label", `${pack.title}. ${isCompleted ? "Finished" : "Not finished yet"}.`);
     button.addEventListener("click", () => navigateTo(getSayFindPackRoute(packIndex)));
     button.innerHTML = `
-      <div class="pack-emoji-row" aria-hidden="true">${pack.words.map((item) => item.emoji).join(" ")}</div>
+      <div class="pack-emoji-row" aria-hidden="true">${packWords.slice(0, 5).map((item) => item.emoji).join(" ")}</div>
       <div class="pack-title-row">
         <h2>${pack.title}</h2>
         <span class="status-badge ${isCompleted ? "" : "unfinished"}">${isCompleted ? "Done" : "Play"}</span>
       </div>
-      <p>5 picture rounds + 5 listening rounds</p>
+      <p>${isLevelTwo() ? "Mixed rounds from a bigger word pool" : "5 picture rounds + 5 listening rounds"}</p>
     `;
     return button;
   }
   function startSayFindPack(packIndex) {
     state.sayFindPackIndex = packIndex;
     state.sayFindScenarioIndex = 0;
+    state.sayFindScenarios = createSayFindScenarios(getCurrentSayFindPack());
     state.isAdvancing = false;
     showScreen("say-find");
     renderSayFindScenario();
@@ -501,8 +634,8 @@
     const scenario = getCurrentSayFindScenario();
     state.hasRevealedSayFindChoices = false;
     state.isAdvancing = false;
-    elements.sayFindPackTheme.textContent = pack.title;
-    elements.sayFindProgress.textContent = `${state.sayFindScenarioIndex + 1} / ${SAY_FIND_SCENARIOS_PER_PACK}`;
+    elements.sayFindPackTheme.textContent = `${pack.title} · ${getLevelLabel()}`;
+    elements.sayFindProgress.textContent = `${state.sayFindScenarioIndex + 1} / ${state.sayFindScenarios.length}`;
     elements.sayFindPromptCard.style.borderColor = pack.color;
     elements.sayFindPromptCard.setAttribute("aria-label", `Hear ${scenario.word}`);
     elements.sayFindPromptCard.replaceChildren(createSayFindPromptContent(scenario));
@@ -538,7 +671,8 @@
   function createSayFindChoices(scenario) {
     const otherWords = getAllSayFindWords().filter((item) => item.word !== scenario.word);
     const shuffledOthers = shuffleItems(otherWords).slice(0, CHOICE_COUNT - 1);
-    return shuffleItems([scenario, ...shuffledOthers]);
+    const choices = [scenario, ...shuffledOthers];
+    return isLevelTwo() ? shuffleItems(choices) : shuffleItems(choices);
   }
   function createSayFindChoiceCard(choice, answerWord) {
     const button = document.createElement("button");
@@ -567,7 +701,7 @@
     window.setTimeout(advanceSayFindScenario, NEXT_SCENARIO_DELAY_MS);
   }
   function advanceSayFindScenario() {
-    const isPackFinished = state.sayFindScenarioIndex + 1 >= SAY_FIND_SCENARIOS_PER_PACK;
+    const isPackFinished = state.sayFindScenarioIndex + 1 >= state.sayFindScenarios.length;
     if (isPackFinished) {
       completeSayFindPack();
       showCompletionCelebration(() => navigateTo(ROUTES.sayFindPacks));
@@ -588,17 +722,33 @@
     return SAY_FIND_PACKS[state.sayFindPackIndex];
   }
   function getCurrentSayFindScenario() {
-    const pack = getCurrentSayFindPack();
-    const wordIndex = state.sayFindScenarioIndex % WORDS_PER_PACK;
-    const hasPicture = state.sayFindScenarioIndex < WORDS_PER_PACK;
-    const wordItem = pack.words[wordIndex];
-    return Object.freeze({ word: wordItem.word, emoji: wordItem.emoji, hasPicture });
+    if (state.sayFindScenarios.length === 0) {
+      state.sayFindScenarios = createSayFindScenarios(getCurrentSayFindPack());
+    }
+    return state.sayFindScenarios[state.sayFindScenarioIndex];
+  }
+  function createSayFindScenarios(pack) {
+    const packWords = getSayFindPackWords(pack);
+    if (!isLevelTwo()) {
+      const levelOneWords = packWords.slice(0, WORDS_PER_PACK);
+      return levelOneWords.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
+        levelOneWords.map((item) => Object.freeze({ ...item, hasPicture: false }))
+      );
+    }
+    return shuffleItems(packWords).slice(0, SAY_FIND_SCENARIOS_PER_PACK).map((item, index) => Object.freeze({
+      ...item,
+      hasPicture: index % 3 !== 1
+    }));
+  }
+  function getSayFindPackWords(pack) {
+    return pack.words.concat(SAY_FIND_LEVEL_TWO_EXTRA_WORDS[pack.id] || []);
   }
   function getAllSayFindWords() {
-    return SAY_FIND_PACKS.flatMap((pack) => pack.words);
+    return SAY_FIND_PACKS.flatMap((pack) => getSayFindPackWords(pack));
   }
   function startPackBagGame() {
     state.bagScenarioIndex = 0;
+    state.bagScenarios = createPackBagScenarios();
     state.isAdvancing = false;
     showScreen("pack-bag");
     renderPackBagScenario();
@@ -607,7 +757,7 @@
     const scenario = getCurrentPackBagScenario();
     state.hasRevealedBagChoices = false;
     state.isAdvancing = false;
-    elements.packBagProgress.textContent = `${state.bagScenarioIndex + 1} / ${BAG_ROUNDS.length}`;
+    elements.packBagProgress.textContent = `${state.bagScenarioIndex + 1} / ${state.bagScenarios.length}`;
     elements.packBagPromptCard.style.borderColor = "#22c55e";
     elements.packBagPromptCard.setAttribute("aria-label", `Hear pack the ${scenario.word}`);
     elements.packBagPromptLabel.textContent = "Tap the bag";
@@ -663,7 +813,7 @@
     window.setTimeout(advancePackBagScenario, NEXT_SCENARIO_DELAY_MS);
   }
   function advancePackBagScenario() {
-    const isGameFinished = state.bagScenarioIndex + 1 >= BAG_ROUNDS.length;
+    const isGameFinished = state.bagScenarioIndex + 1 >= state.bagScenarios.length;
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "pack-my-bag");
       saveProgress(progress);
@@ -674,14 +824,22 @@
     renderPackBagScenario();
   }
   function getCurrentPackBagScenario() {
-    return BAG_ROUNDS[state.bagScenarioIndex];
+    if (state.bagScenarios.length === 0) {
+      state.bagScenarios = createPackBagScenarios();
+    }
+    return state.bagScenarios[state.bagScenarioIndex];
+  }
+  function createPackBagScenarios() {
+    const pool = isLevelTwo() ? BAG_ROUNDS.concat(BAG_LEVEL_TWO_ITEMS) : BAG_ROUNDS;
+    return isLevelTwo() ? shuffleItems(pool).slice(0, BAG_ROUNDS.length) : [...BAG_ROUNDS];
   }
   function getPackBagPhrase(word) {
     return `Pack the ${word}`;
   }
   function getAllPackBagChoiceItems() {
     const uniqueItems = new Map();
-    BAG_ROUNDS.concat(getAllSayFindWords()).forEach((item) => {
+    const bagPool = isLevelTwo() ? BAG_ROUNDS.concat(BAG_LEVEL_TWO_ITEMS) : BAG_ROUNDS;
+    bagPool.concat(getAllSayFindWords()).forEach((item) => {
       if (!uniqueItems.has(item.word)) {
         uniqueItems.set(item.word, item);
       }
@@ -690,6 +848,7 @@
   }
   function startActionGame() {
     state.actionScenarioIndex = 0;
+    state.actionScenarios = createActionScenarios();
     state.isAdvancing = false;
     showScreen("action-game");
     renderActionScenario();
@@ -698,7 +857,7 @@
     const scenario = getCurrentActionScenario();
     state.hasRevealedActionChoices = false;
     state.isAdvancing = false;
-    elements.actionGameProgress.textContent = `${state.actionScenarioIndex + 1} / ${ACTION_SCENARIOS_PER_GAME}`;
+    elements.actionGameProgress.textContent = `${state.actionScenarioIndex + 1} / ${state.actionScenarios.length}`;
     elements.actionGamePromptCard.style.borderColor = "#38bdf8";
     elements.actionGamePromptCard.setAttribute("aria-label", `Hear ${scenario.phrase}`);
     elements.actionGamePromptCard.replaceChildren(createActionPromptContent(scenario));
@@ -732,7 +891,7 @@
     elements.actionGameChoiceGrid.replaceChildren(...choiceCards);
   }
   function createActionChoices(scenario) {
-    const otherItems = ACTION_BASE_ROUNDS.filter((item) => item.phrase !== scenario.phrase);
+    const otherItems = getActionChoicePool().filter((item) => item.phrase !== scenario.phrase);
     const shuffledOthers = shuffleItems(otherItems).slice(0, CHOICE_COUNT - 1);
     return shuffleItems([scenario, ...shuffledOthers]);
   }
@@ -763,7 +922,7 @@
     window.setTimeout(advanceActionScenario, NEXT_SCENARIO_DELAY_MS);
   }
   function advanceActionScenario() {
-    const isGameFinished = state.actionScenarioIndex + 1 >= ACTION_SCENARIOS_PER_GAME;
+    const isGameFinished = state.actionScenarioIndex + 1 >= state.actionScenarios.length;
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "who-is-doing-it");
       saveProgress(progress);
@@ -774,20 +933,28 @@
     renderActionScenario();
   }
   function getCurrentActionScenario() {
-    const baseIndex = state.actionScenarioIndex % ACTION_BASE_ROUNDS.length;
-    const hasPicture = state.actionScenarioIndex < ACTION_BASE_ROUNDS.length;
-    const baseRound = ACTION_BASE_ROUNDS[baseIndex];
-    return Object.freeze({
-      phrase: baseRound.phrase,
-      noun: baseRound.noun,
-      verb: baseRound.verb,
-      nounEmoji: baseRound.nounEmoji,
-      verbEmoji: baseRound.verbEmoji,
-      hasPicture
-    });
+    if (state.actionScenarios.length === 0) {
+      state.actionScenarios = createActionScenarios();
+    }
+    return state.actionScenarios[state.actionScenarioIndex];
+  }
+  function createActionScenarios() {
+    if (!isLevelTwo()) {
+      return ACTION_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
+        ACTION_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: false }))
+      );
+    }
+    return shuffleItems(getActionChoicePool()).slice(0, ACTION_SCENARIOS_PER_GAME).map((item, index) => Object.freeze({
+      ...item,
+      hasPicture: index % 2 === 0
+    }));
+  }
+  function getActionChoicePool() {
+    return isLevelTwo() ? ACTION_BASE_ROUNDS.concat(ACTION_LEVEL_TWO_ROUNDS) : ACTION_BASE_ROUNDS;
   }
   function startNumberGame() {
     state.numberScenarioIndex = 0;
+    state.numberScenarios = createNumberScenarios();
     state.isAdvancing = false;
     showScreen("number-game");
     renderNumberScenario();
@@ -796,7 +963,7 @@
     const scenario = getCurrentNumberScenario();
     state.hasRevealedNumberChoices = false;
     state.isAdvancing = false;
-    elements.numberGameProgress.textContent = `${state.numberScenarioIndex + 1} / ${NUMBER_SCENARIOS_PER_GAME}`;
+    elements.numberGameProgress.textContent = `${state.numberScenarioIndex + 1} / ${state.numberScenarios.length}`;
     elements.numberGamePromptCard.style.borderColor = "#f97316";
     elements.numberGamePromptCard.setAttribute("aria-label", `Hear ${scenario.word}`);
     elements.numberGamePromptCard.replaceChildren(createNumberCardContent(scenario));
@@ -830,6 +997,10 @@
     elements.numberGameChoiceGrid.replaceChildren(...choiceCards);
   }
   function createNumberChoices(scenario) {
+    if (isLevelTwo()) {
+      const others = NUMBER_ROUNDS.filter((item) => item.number !== scenario.number);
+      return shuffleItems([scenario, ...shuffleItems(others).slice(0, CHOICE_COUNT - 1)]);
+    }
     const firstNumber = Math.min(Math.max(scenario.number - 1, 1), NUMBER_ROUNDS.length - CHOICE_COUNT + 1);
     return NUMBER_ROUNDS.slice(firstNumber - 1, firstNumber - 1 + CHOICE_COUNT);
   }
@@ -857,7 +1028,7 @@
     window.setTimeout(advanceNumberScenario, NEXT_SCENARIO_DELAY_MS);
   }
   function advanceNumberScenario() {
-    const isGameFinished = state.numberScenarioIndex + 1 >= NUMBER_SCENARIOS_PER_GAME;
+    const isGameFinished = state.numberScenarioIndex + 1 >= state.numberScenarios.length;
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "number-find");
       saveProgress(progress);
@@ -868,12 +1039,20 @@
     renderNumberScenario();
   }
   function getCurrentNumberScenario() {
-    return NUMBER_ROUNDS[state.numberScenarioIndex];
+    if (state.numberScenarios.length === 0) {
+      state.numberScenarios = createNumberScenarios();
+    }
+    return state.numberScenarios[state.numberScenarioIndex];
+  }
+  function createNumberScenarios() {
+    return isLevelTwo() ? shuffleItems(NUMBER_ROUNDS) : [...NUMBER_ROUNDS];
   }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
     state.memoryMode = memoryMode;
     state.memoryLockIndex = 0;
+    state.memoryCodes = createMemoryCodes();
+    state.memoryHiddenIndexes = createMemoryHiddenIndexes();
     state.isAdvancing = false;
     showScreen("memory-lock");
     renderMemoryLockRound();
@@ -886,7 +1065,7 @@
     state.isMemoryCodeVisible = state.memoryMode === MEMORY_MODES.visible;
     elements.memoryLockEyebrow.textContent = state.memoryMode === MEMORY_MODES.hidden ? "Memory Lock Plus" : "Memory Lock";
     elements.memoryLockTitle.textContent = state.memoryMode === MEMORY_MODES.hidden ? "Remember the hidden number" : "Open the lock";
-    elements.memoryLockProgress.textContent = `${state.memoryLockIndex + 1} / ${MEMORY_CODES.length}`;
+    elements.memoryLockProgress.textContent = `${state.memoryLockIndex + 1} / ${state.memoryCodes.length}`;
     elements.memoryLockIcon.textContent = "🔒";
     elements.memoryLockStatus.textContent = "Locked";
     elements.memoryLockCard.style.borderColor = state.memoryMode === MEMORY_MODES.hidden ? "#ef4444" : "#f59e0b";
@@ -1003,7 +1182,7 @@
     state.memoryPeekTimerId = 0;
   }
   function advanceMemoryLock() {
-    const isGameFinished = state.memoryLockIndex + 1 >= MEMORY_CODES.length;
+    const isGameFinished = state.memoryLockIndex + 1 >= state.memoryCodes.length;
     if (isGameFinished) {
       addUnique(progress.completedGameIds, getMemoryGameId());
       saveProgress(progress);
@@ -1014,10 +1193,30 @@
     renderMemoryLockRound();
   }
   function getCurrentMemoryCode() {
-    return MEMORY_CODES[state.memoryLockIndex];
+    if (state.memoryCodes.length === 0) {
+      state.memoryCodes = createMemoryCodes();
+    }
+    return state.memoryCodes[state.memoryLockIndex];
+  }
+  function createMemoryCodes() {
+    if (!isLevelTwo()) {
+      return MEMORY_CODES.map((code) => Object.freeze([...code]));
+    }
+    return Array.from({ length: MEMORY_CODES.length }, () => Object.freeze(
+      Array.from({ length: MEMORY_CODE_LENGTH }, () => Math.floor(Math.random() * 10))
+    ));
+  }
+  function createMemoryHiddenIndexes() {
+    if (!isLevelTwo()) {
+      return MEMORY_CODES.map((_, index) => index % MEMORY_CODE_LENGTH);
+    }
+    return MEMORY_CODES.map(() => Math.floor(Math.random() * MEMORY_CODE_LENGTH));
   }
   function getMemoryHiddenIndex() {
-    return state.memoryLockIndex % MEMORY_CODE_LENGTH;
+    if (state.memoryHiddenIndexes.length === 0) {
+      state.memoryHiddenIndexes = createMemoryHiddenIndexes();
+    }
+    return state.memoryHiddenIndexes[state.memoryLockIndex];
   }
   function getMemoryGameId() {
     return state.memoryMode === MEMORY_MODES.hidden ? "memory-lock-hidden" : "memory-lock";
@@ -1039,9 +1238,11 @@
   }
   function showCompletionCelebration(afterCelebration) {
     window.clearTimeout(state.celebrationTimerId);
-    elements.celebrationMessage.textContent = getRandomCelebrationMessage();
+    const celebrationMessage = getRandomCelebrationMessage();
+    elements.celebrationMessage.textContent = celebrationMessage;
     renderConfetti();
     elements.celebrationOverlay.hidden = false;
+    void speakText(celebrationMessage);
     state.celebrationTimerId = window.setTimeout(() => {
       hideCompletionCelebration();
       afterCelebration();
@@ -1123,6 +1324,7 @@
   }
   function showScreen(screenName) {
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
+    elements.settingsScreen.classList.toggle("screen-active", screenName === "settings");
     elements.packPickerScreen.classList.toggle("screen-active", screenName === "pack-picker");
     elements.sayFindScreen.classList.toggle("screen-active", screenName === "say-find");
     elements.packBagScreen.classList.toggle("screen-active", screenName === "pack-bag");
@@ -1158,10 +1360,14 @@
       const parsedLegacyValue = legacyValue ? JSON.parse(legacyValue) : null;
       const completedGameIds = getValidGameIds(parsedValue?.completedGameIds);
       const completedSayFindPackIds = getValidSayFindPackIds(parsedValue?.completedSayFindPackIds || parsedValue?.completedPackIds || parsedLegacyValue?.completedPackIds);
-      return { completedGameIds, completedSayFindPackIds };
+      const level = getValidLevel(parsedValue?.level);
+      return { completedGameIds, completedSayFindPackIds, level };
     } catch (err) {
-      return { completedGameIds: [], completedSayFindPackIds: [] };
+      return { completedGameIds: [], completedSayFindPackIds: [], level: LEVELS.learn };
     }
+  }
+  function getValidLevel(level) {
+    return level === LEVELS.mix ? LEVELS.mix : LEVELS.learn;
   }
   function getValidGameIds(gameIds) {
     if (!Array.isArray(gameIds)) {
@@ -1193,7 +1399,8 @@
     getPackBagScenarioCount: () => BAG_ROUNDS.length,
     getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME,
     getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME,
-    getMemoryLockCount: () => MEMORY_CODES.length
+    getMemoryLockCount: () => MEMORY_CODES.length,
+    getCurrentLevel: () => progress.level
   });
   window.SayFindEnglishGame = Object.freeze({
     getPackCount: () => SAY_FIND_PACKS.length,

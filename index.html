@@ -22,8 +22,30 @@
           <p class="eyebrow">Tap, listen, and learn</p>
           <h1 id="catalog-title">Little English Games</h1>
           <p class="hero-copy">Choose a gentle game. Everything works on this device after the first load.</p>
+          <div class="catalog-actions">
+            <span id="level-badge" class="level-badge">Level 1: Learn</span>
+            <button id="settings-button" class="soft-button" type="button" aria-label="Settings">⚙️ Settings</button>
+          </div>
         </div>
         <div id="game-catalog" class="catalog-grid" aria-label="Game catalog"></div>
+      </section>
+      <section id="settings-screen" class="screen" aria-labelledby="settings-title">
+        <button id="settings-back-button" class="soft-button" type="button">Game catalog</button>
+        <div class="hero compact-hero">
+          <p class="eyebrow">Parent settings</p>
+          <h1 id="settings-title">Game level</h1>
+          <p class="hero-copy">Choose the general level for every game.</p>
+        </div>
+        <div class="settings-grid" aria-label="Game level settings">
+          <button id="level-one-button" class="settings-card" type="button">
+            <span class="settings-title">Level 1: Learn</span>
+            <span class="settings-copy">Clear, predictable rounds. Best for first practice.</span>
+          </button>
+          <button id="level-two-button" class="settings-card" type="button">
+            <span class="settings-title">Level 2: Mix</span>
+            <span class="settings-copy">More random order, bigger pools, and harder memory.</span>
+          </button>
+        </div>
       </section>
       <section id="pack-picker-screen" class="screen" aria-labelledby="picker-title">
         <button id="catalog-back-button" class="soft-button" type="button">Game catalog</button>
