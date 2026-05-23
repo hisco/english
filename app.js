@@ -329,12 +329,12 @@
   renderCurrentRoute();
   registerServiceWorker();
   function bindEvents() {
-    elements.catalogBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.catalogBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindBackButton.addEventListener("click", () => navigateTo(ROUTES.sayFindPacks));
-    elements.packBagBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.actionGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.numberGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.memoryLockBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.packBagBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.actionGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.numberGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
@@ -404,6 +404,12 @@
       return;
     }
     window.location.hash = hash;
+  }
+  function navigateToCatalogWithSpeech() {
+    navigateTo(ROUTES.catalog);
+    window.setTimeout(() => {
+      void speakText("game catalog");
+    }, 60);
   }
   function getSayFindPackRoute(packIndex) {
     return `${ROUTES.sayFindPacks}/${packIndex}`;
@@ -937,6 +943,7 @@
     if (state.isAdvancing || state.isMemoryOpen || state.memoryInput.length >= MEMORY_CODE_LENGTH) {
       return;
     }
+    void speakText(getMemoryNumberWord(number));
     state.memoryInput.push(number);
     renderMemoryInputDisplay();
     if (state.memoryInput.length !== MEMORY_CODE_LENGTH) {
@@ -951,6 +958,13 @@
   function hasMatchingMemoryInput() {
     const code = getCurrentMemoryCode();
     return code.every((digit, index) => digit === state.memoryInput[index]);
+  }
+  function getMemoryNumberWord(number) {
+    if (number === 0) {
+      return "zero";
+    }
+    const numberItem = NUMBER_ROUNDS.find((item) => item.number === number);
+    return numberItem ? numberItem.word : String(number);
   }
   function openMemoryLock() {
     clearMemoryPeekTimer();
