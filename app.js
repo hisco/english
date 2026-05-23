@@ -1266,7 +1266,17 @@
       button.addEventListener("click", () => handleMemoryNumberClick(number));
       return button;
     });
+    keys.push(createMemoryClearButton());
     elements.memoryKeypad.replaceChildren(...keys);
+  }
+  function createMemoryClearButton() {
+    const button = document.createElement("button");
+    button.className = "memory-key memory-clear-key";
+    button.type = "button";
+    button.textContent = "Clear";
+    button.setAttribute("aria-label", "Clear typed numbers");
+    button.addEventListener("click", handleMemoryClearClick);
+    return button;
   }
   function handleMemoryNumberClick(number) {
     if (state.isAdvancing || state.isMemoryOpen || state.memoryInput.length >= MEMORY_CODE_LENGTH) {
@@ -1283,6 +1293,15 @@
       return;
     }
     resetMemoryInputAfterMiss();
+  }
+  function handleMemoryClearClick() {
+    if (state.isAdvancing || state.isMemoryOpen || state.memoryInput.length === 0) {
+      return;
+    }
+    state.memoryInput = [];
+    renderMemoryInputDisplay();
+    elements.memoryLockHelperText.textContent = "Cleared. Type the code again.";
+    void speakText("clear");
   }
   function hasMatchingMemoryInput() {
     const code = getCurrentMemoryCode();

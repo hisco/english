@@ -526,6 +526,13 @@ h1 {
   transform: scale(0.96);
 }
 
+.memory-clear-key {
+  grid-column: span 2;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: clamp(1.35rem, 4vw, 2.2rem);
+}
+
 .celebration-overlay {
   align-items: center;
   background: rgba(31, 41, 55, 0.22);
