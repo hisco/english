@@ -317,7 +317,8 @@ h1 {
 .prompt-card,
 .bag-prompt-card,
 .action-prompt-card,
-.number-prompt-card {
+.number-prompt-card,
+.weather-prompt-card {
   width: min(25rem, 90vw);
   min-height: min(48vh, 22rem);
   border-color: var(--sun);
@@ -325,7 +326,8 @@ h1 {
 
 .bag-prompt-card,
 .action-prompt-card,
-.number-prompt-card {
+.number-prompt-card,
+.weather-prompt-card {
   gap: 0.5rem;
   min-height: min(48vh, 20rem);
 }
@@ -359,6 +361,15 @@ h1 {
   display: flex;
   gap: clamp(0.5rem, 2vw, 1rem);
   justify-content: center;
+}
+
+.weather-symbol {
+  font-size: clamp(6rem, 22vw, 12rem);
+  line-height: 1;
+}
+
+.choice-card .weather-symbol {
+  font-size: clamp(4.5rem, 16vw, 8rem);
 }
 
 .number-symbol {
@@ -405,7 +416,8 @@ h1 {
 
 .pack-bag-screen .choice-card.is-found,
 .action-game-screen .choice-card.is-found,
-.number-game-screen .choice-card.is-found {
+.number-game-screen .choice-card.is-found,
+.weather-game-screen .choice-card.is-found {
   transform: translateY(-0.8rem) scale(0.96);
 }
 

@@ -8,6 +8,7 @@ A dependency-free static web catalog of gentle English listening games for young
 - **Pack My Bag**: hear what to pack, tap cards to explore their words, and put the matching item in the bag.
 - **Who Is Doing It?**: hear noun and verb phrases, explore action cards, and match who is doing the action.
 - **Number Find**: hear numbers, explore ordered choices, and find each number sequentially from 1 to 10.
+- **What Is the Weather?**: hear weather words, explore weather icons, and find the matching weather.
 - **Memory Lock**: copy four visible numbers to open a lock.
 - **Memory Lock Plus**: peek at four numbers, remember the hidden one, and type the code to open the lock.
 
