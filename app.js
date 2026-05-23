@@ -153,6 +153,20 @@
     Object.freeze({ number: 9, word: "nine" }),
     Object.freeze({ number: 10, word: "ten" })
   ]);
+  const WEATHER_BASE_ROUNDS = Object.freeze([
+    Object.freeze({ word: "sunny", emoji: "☀️" }),
+    Object.freeze({ word: "cloudy", emoji: "☁️" }),
+    Object.freeze({ word: "rainy", emoji: "🌧️" }),
+    Object.freeze({ word: "snowy", emoji: "❄️" }),
+    Object.freeze({ word: "windy", emoji: "💨" })
+  ]);
+  const WEATHER_LEVEL_TWO_ROUNDS = Object.freeze([
+    Object.freeze({ word: "stormy", emoji: "⛈️" }),
+    Object.freeze({ word: "foggy", emoji: "🌫️" }),
+    Object.freeze({ word: "rainbow", emoji: "🌈" }),
+    Object.freeze({ word: "hot", emoji: "🥵" }),
+    Object.freeze({ word: "cold", emoji: "🥶" })
+  ]);
   const MEMORY_CODES = Object.freeze([
     Object.freeze([1, 2, 3, 4]),
     Object.freeze([2, 5, 8, 0]),
@@ -162,6 +176,21 @@
   ]);
   const MEMORY_KEYPAD_NUMBERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
   const MEMORY_MODES = Object.freeze({ visible: "visible", hidden: "hidden" });
+  const CELEBRATION_MESSAGES = Object.freeze([
+    "You are the winner!",
+    "What a champ!",
+    "You did it!",
+    "Amazing job!",
+    "Super star!",
+    "Fantastic work!",
+    "Great thinking!",
+    "Way to go!",
+    "You opened it!",
+    "Brilliant!"
+  ]);
+  const CONFETTI_COLORS = Object.freeze(["#facc15", "#38bdf8", "#f472b6", "#22c55e", "#fb923c", "#a78bfa"]);
+  const CONFETTI_COUNT = 48;
+  const CELEBRATION_DURATION_MS = 2300;
   const LEVELS = Object.freeze({ learn: 1, mix: 2 });
   const SAY_FIND_LEVEL_TWO_EXTRA_WORDS = Object.freeze({
     "farm-animals": Object.freeze([
@@ -259,6 +288,7 @@
   const SAY_FIND_TOTAL_SCENARIOS = SAY_FIND_PACKS.length * SAY_FIND_SCENARIOS_PER_PACK;
   const ACTION_SCENARIOS_PER_GAME = ACTION_BASE_ROUNDS.length * LEVELS_PER_PACK;
   const NUMBER_SCENARIOS_PER_GAME = NUMBER_ROUNDS.length;
+  const WEATHER_SCENARIOS_PER_GAME = WEATHER_BASE_ROUNDS.length * LEVELS_PER_PACK;
   const MEMORY_CODE_LENGTH = 4;
   const MEMORY_PEEK_MS = 2500;
   const EXIT_HOLD_MS = 1600;
@@ -273,6 +303,7 @@
     packBag: "#/pack-my-bag",
     actionGame: "#/who-is-doing-it",
     numberGame: "#/numbers",
+    weatherGame: "#/weather",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
   });
@@ -310,6 +341,14 @@
       actionLabel: "Count 1 to 10"
     }),
     Object.freeze({
+      id: "weather-find",
+      title: "What Is the Weather?",
+      emoji: "☀️ ☁️ 🌧️",
+      color: "#0ea5e9",
+      description: "Hear the weather word and find the matching weather icon.",
+      actionLabel: "Find weather"
+    }),
+    Object.freeze({
       id: "memory-lock",
       title: "Memory Lock",
       emoji: "🔒 1 2",
@@ -333,22 +372,26 @@
     bagScenarios: [],
     actionScenarios: [],
     numberScenarios: [],
+    weatherScenarios: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
     hasRevealedBagChoices: false,
     hasRevealedActionChoices: false,
     hasRevealedNumberChoices: false,
+    hasRevealedWeatherChoices: false,
     isAdvancing: false,
     bagScenarioIndex: 0,
     actionScenarioIndex: 0,
     numberScenarioIndex: 0,
+    weatherScenarioIndex: 0,
     memoryLockIndex: 0,
     memoryMode: MEMORY_MODES.visible,
     memoryInput: [],
     isMemoryCodeVisible: true,
     isMemoryOpen: false,
     memoryPeekTimerId: 0,
+    celebrationTimerId: 0,
     exitTimerId: 0,
     audioContext: null
   };
@@ -394,6 +437,13 @@
     numberGameHelperText: document.getElementById("number-game-helper-text"),
     numberGameProgress: document.getElementById("number-game-progress"),
     numberGameParentExit: document.getElementById("number-game-parent-exit"),
+    weatherGameScreen: document.getElementById("weather-game-screen"),
+    weatherGameBackButton: document.getElementById("weather-game-back-button"),
+    weatherGamePromptCard: document.getElementById("weather-game-prompt-card"),
+    weatherGameChoiceGrid: document.getElementById("weather-game-choice-grid"),
+    weatherGameHelperText: document.getElementById("weather-game-helper-text"),
+    weatherGameProgress: document.getElementById("weather-game-progress"),
+    weatherGameParentExit: document.getElementById("weather-game-parent-exit"),
     memoryLockScreen: document.getElementById("memory-lock-screen"),
     memoryLockBackButton: document.getElementById("memory-lock-back-button"),
     memoryLockCard: document.getElementById("memory-lock-card"),
@@ -406,7 +456,10 @@
     memoryInputDisplay: document.getElementById("memory-input-display"),
     memoryLockHelperText: document.getElementById("memory-lock-helper-text"),
     memoryKeypad: document.getElementById("memory-keypad"),
-    memoryLockParentExit: document.getElementById("memory-lock-parent-exit")
+    memoryLockParentExit: document.getElementById("memory-lock-parent-exit"),
+    celebrationOverlay: document.getElementById("celebration-overlay"),
+    celebrationMessage: document.getElementById("celebration-message"),
+    confettiField: document.getElementById("confetti-field")
   };
   const progress = loadProgress();
   bindEvents();
@@ -414,25 +467,28 @@
   registerServiceWorker();
   function bindEvents() {
     elements.settingsButton.addEventListener("click", () => navigateTo(ROUTES.settings));
-    elements.settingsBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.settingsBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.levelOneButton.addEventListener("click", () => setGameLevel(LEVELS.learn));
     elements.levelTwoButton.addEventListener("click", () => setGameLevel(LEVELS.mix));
-    elements.catalogBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.catalogBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindBackButton.addEventListener("click", () => navigateTo(ROUTES.sayFindPacks));
-    elements.packBagBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.actionGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.numberGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.memoryLockBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.packBagBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.actionGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.numberGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
     elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
+    elements.weatherGamePromptCard.addEventListener("click", handleWeatherPromptClick);
     elements.memoryLockCard.addEventListener("click", handleMemoryLockClick);
     window.addEventListener("hashchange", renderCurrentRoute);
     bindParentExit(elements.sayFindParentExit, () => navigateTo(ROUTES.sayFindPacks));
     bindParentExit(elements.packBagParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.actionGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.numberGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
@@ -475,6 +531,10 @@
       startNumberGame();
       return;
     }
+    if (hash === ROUTES.weatherGame) {
+      startWeatherGame();
+      return;
+    }
     if (hash === ROUTES.memoryLock) {
       startMemoryLockGame(MEMORY_MODES.visible);
       return;
@@ -496,6 +556,12 @@
       return;
     }
     window.location.hash = hash;
+  }
+  function navigateToCatalogWithSpeech() {
+    navigateTo(ROUTES.catalog);
+    window.setTimeout(() => {
+      void speakText("game catalog");
+    }, 60);
   }
   function getSayFindPackRoute(packIndex) {
     return `${ROUTES.sayFindPacks}/${packIndex}`;
@@ -565,6 +631,10 @@
     }
     if (gameId === "number-find") {
       navigateTo(ROUTES.numberGame);
+      return;
+    }
+    if (gameId === "weather-find") {
+      navigateTo(ROUTES.weatherGame);
       return;
     }
     if (gameId === "memory-lock") {
@@ -679,7 +749,7 @@
     const isPackFinished = state.sayFindScenarioIndex + 1 >= state.sayFindScenarios.length;
     if (isPackFinished) {
       completeSayFindPack();
-      navigateTo(ROUTES.sayFindPacks);
+      showCompletionCelebration(() => navigateTo(ROUTES.sayFindPacks));
       return;
     }
     state.sayFindScenarioIndex += 1;
@@ -792,7 +862,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "pack-my-bag");
       saveProgress(progress);
-      navigateTo(ROUTES.catalog);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
       return;
     }
     state.bagScenarioIndex += 1;
@@ -901,7 +971,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "who-is-doing-it");
       saveProgress(progress);
-      navigateTo(ROUTES.catalog);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
       return;
     }
     state.actionScenarioIndex += 1;
@@ -1007,7 +1077,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "number-find");
       saveProgress(progress);
-      navigateTo(ROUTES.catalog);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
       return;
     }
     state.numberScenarioIndex += 1;
@@ -1021,6 +1091,111 @@
   }
   function createNumberScenarios() {
     return isLevelTwo() ? shuffleItems(NUMBER_ROUNDS) : [...NUMBER_ROUNDS];
+  }
+  function startWeatherGame() {
+    state.weatherScenarioIndex = 0;
+    state.weatherScenarios = createWeatherScenarios();
+    state.isAdvancing = false;
+    showScreen("weather-game");
+    renderWeatherScenario();
+  }
+  function renderWeatherScenario() {
+    const scenario = getCurrentWeatherScenario();
+    state.hasRevealedWeatherChoices = false;
+    state.isAdvancing = false;
+    elements.weatherGameProgress.textContent = `${state.weatherScenarioIndex + 1} / ${state.weatherScenarios.length}`;
+    elements.weatherGamePromptCard.style.borderColor = "#0ea5e9";
+    elements.weatherGamePromptCard.setAttribute("aria-label", `Hear ${scenario.word}`);
+    elements.weatherGamePromptCard.replaceChildren(createWeatherPromptContent(scenario));
+    elements.weatherGameChoiceGrid.replaceChildren();
+    elements.weatherGameHelperText.textContent = scenario.hasPicture ? "Tap the big card to hear the weather." : "Tap the sound card, then find the weather.";
+  }
+  function createWeatherPromptContent(scenario) {
+    const fragment = document.createDocumentFragment();
+    const icon = document.createElement("span");
+    const label = document.createElement("span");
+    icon.className = scenario.hasPicture ? "weather-symbol" : "sound-only";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = scenario.hasPicture ? scenario.emoji : "🔊";
+    label.className = "word-label";
+    label.textContent = scenario.word;
+    fragment.append(icon, label);
+    return fragment;
+  }
+  function handleWeatherPromptClick() {
+    const scenario = getCurrentWeatherScenario();
+    void speakText(scenario.word);
+    if (state.hasRevealedWeatherChoices) {
+      return;
+    }
+    state.hasRevealedWeatherChoices = true;
+    elements.weatherGameHelperText.textContent = "Tap the weather icons. Every icon speaks.";
+    renderWeatherChoices(scenario);
+  }
+  function renderWeatherChoices(scenario) {
+    const choiceCards = createWeatherChoices(scenario).map((choice) => createWeatherChoiceCard(choice, scenario.word));
+    elements.weatherGameChoiceGrid.replaceChildren(...choiceCards);
+  }
+  function createWeatherChoices(scenario) {
+    const otherItems = getWeatherChoicePool().filter((item) => item.word !== scenario.word);
+    return shuffleItems([scenario, ...shuffleItems(otherItems).slice(0, CHOICE_COUNT - 1)]);
+  }
+  function createWeatherChoiceCard(choice, answerWord) {
+    const button = document.createElement("button");
+    button.className = "card choice-card";
+    button.type = "button";
+    button.setAttribute("aria-label", choice.word);
+    button.innerHTML = `
+      <span class="weather-symbol" aria-hidden="true">${choice.emoji}</span>
+      <span class="word-label">${choice.word}</span>
+    `;
+    button.addEventListener("click", () => handleWeatherChoiceClick(choice, answerWord, button));
+    return button;
+  }
+  async function handleWeatherChoiceClick(choice, answerWord, button) {
+    if (state.isAdvancing) {
+      return;
+    }
+    if (choice.word !== answerWord) {
+      await speakText(choice.word);
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(choice.word);
+    playHappySound();
+    window.setTimeout(advanceWeatherScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceWeatherScenario() {
+    const isGameFinished = state.weatherScenarioIndex + 1 >= state.weatherScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "weather-find");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.weatherScenarioIndex += 1;
+    renderWeatherScenario();
+  }
+  function getCurrentWeatherScenario() {
+    if (state.weatherScenarios.length === 0) {
+      state.weatherScenarios = createWeatherScenarios();
+    }
+    return state.weatherScenarios[state.weatherScenarioIndex];
+  }
+  function createWeatherScenarios() {
+    if (!isLevelTwo()) {
+      return WEATHER_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
+        WEATHER_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: false }))
+      );
+    }
+    return shuffleItems(getWeatherChoicePool()).slice(0, WEATHER_SCENARIOS_PER_GAME).map((item, index) => Object.freeze({
+      ...item,
+      hasPicture: index % 3 !== 1
+    }));
+  }
+  function getWeatherChoicePool() {
+    return isLevelTwo() ? WEATHER_BASE_ROUNDS.concat(WEATHER_LEVEL_TWO_ROUNDS) : WEATHER_BASE_ROUNDS;
   }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
@@ -1091,12 +1266,23 @@
       button.addEventListener("click", () => handleMemoryNumberClick(number));
       return button;
     });
+    keys.push(createMemoryClearButton());
     elements.memoryKeypad.replaceChildren(...keys);
+  }
+  function createMemoryClearButton() {
+    const button = document.createElement("button");
+    button.className = "memory-key memory-clear-key";
+    button.type = "button";
+    button.textContent = "Clear";
+    button.setAttribute("aria-label", "Clear typed numbers");
+    button.addEventListener("click", handleMemoryClearClick);
+    return button;
   }
   function handleMemoryNumberClick(number) {
     if (state.isAdvancing || state.isMemoryOpen || state.memoryInput.length >= MEMORY_CODE_LENGTH) {
       return;
     }
+    void speakText(getMemoryNumberWord(number));
     state.memoryInput.push(number);
     renderMemoryInputDisplay();
     if (state.memoryInput.length !== MEMORY_CODE_LENGTH) {
@@ -1108,9 +1294,25 @@
     }
     resetMemoryInputAfterMiss();
   }
+  function handleMemoryClearClick() {
+    if (state.isAdvancing || state.isMemoryOpen || state.memoryInput.length === 0) {
+      return;
+    }
+    state.memoryInput = [];
+    renderMemoryInputDisplay();
+    elements.memoryLockHelperText.textContent = "Cleared. Type the code again.";
+    void speakText("clear");
+  }
   function hasMatchingMemoryInput() {
     const code = getCurrentMemoryCode();
     return code.every((digit, index) => digit === state.memoryInput[index]);
+  }
+  function getMemoryNumberWord(number) {
+    if (number === 0) {
+      return "zero";
+    }
+    const numberItem = NUMBER_ROUNDS.find((item) => item.number === number);
+    return numberItem ? numberItem.word : String(number);
   }
   function openMemoryLock() {
     clearMemoryPeekTimer();
@@ -1138,11 +1340,19 @@
     state.isMemoryCodeVisible = true;
     elements.memoryLockHelperText.textContent = helperText;
     renderMemoryCodeDisplay();
+    speakHiddenMemoryNumber();
     state.memoryPeekTimerId = window.setTimeout(() => {
       state.isMemoryCodeVisible = false;
       elements.memoryLockHelperText.textContent = "Now type the four numbers.";
       renderMemoryCodeDisplay();
     }, MEMORY_PEEK_MS);
+  }
+  function speakHiddenMemoryNumber() {
+    if (state.memoryMode !== MEMORY_MODES.hidden || state.isMemoryOpen) {
+      return;
+    }
+    const hiddenNumber = getCurrentMemoryCode()[getMemoryHiddenIndex()];
+    void speakText(getMemoryNumberWord(hiddenNumber));
   }
   function clearMemoryPeekTimer() {
     window.clearTimeout(state.memoryPeekTimerId);
@@ -1153,7 +1363,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, getMemoryGameId());
       saveProgress(progress);
-      navigateTo(ROUTES.catalog);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
       return;
     }
     state.memoryLockIndex += 1;
@@ -1202,6 +1412,40 @@
     if (!values.includes(value)) {
       values.push(value);
     }
+  }
+  function showCompletionCelebration(afterCelebration) {
+    window.clearTimeout(state.celebrationTimerId);
+    const celebrationMessage = getRandomCelebrationMessage();
+    elements.celebrationMessage.textContent = celebrationMessage;
+    renderConfetti();
+    elements.celebrationOverlay.hidden = false;
+    void speakText(celebrationMessage);
+    state.celebrationTimerId = window.setTimeout(() => {
+      hideCompletionCelebration();
+      afterCelebration();
+    }, CELEBRATION_DURATION_MS);
+  }
+  function hideCompletionCelebration() {
+    elements.celebrationOverlay.hidden = true;
+    elements.confettiField.replaceChildren();
+    window.clearTimeout(state.celebrationTimerId);
+    state.celebrationTimerId = 0;
+  }
+  function getRandomCelebrationMessage() {
+    return CELEBRATION_MESSAGES[Math.floor(Math.random() * CELEBRATION_MESSAGES.length)];
+  }
+  function renderConfetti() {
+    const pieces = Array.from({ length: CONFETTI_COUNT }, (_, index) => {
+      const piece = document.createElement("span");
+      const color = CONFETTI_COLORS[index % CONFETTI_COLORS.length];
+      piece.className = "confetti-piece";
+      piece.style.background = color;
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.animationDelay = `${Math.random() * 260}ms`;
+      piece.style.setProperty("--confetti-x", `${Math.random() * 80 - 40}vw`);
+      return piece;
+    });
+    elements.confettiField.replaceChildren(...pieces);
   }
   function speakText(text) {
     if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
@@ -1263,9 +1507,13 @@
     elements.packBagScreen.classList.toggle("screen-active", screenName === "pack-bag");
     elements.actionGameScreen.classList.toggle("screen-active", screenName === "action-game");
     elements.numberGameScreen.classList.toggle("screen-active", screenName === "number-game");
+    elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
+    }
+    if (!elements.celebrationOverlay.hidden) {
+      hideCompletionCelebration();
     }
     window.speechSynthesis?.cancel();
   }
@@ -1329,6 +1577,7 @@
     getPackBagScenarioCount: () => BAG_ROUNDS.length,
     getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME,
     getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME,
+    getWeatherScenarioCount: () => WEATHER_SCENARIOS_PER_GAME,
     getMemoryLockCount: () => MEMORY_CODES.length,
     getCurrentLevel: () => progress.level
   });

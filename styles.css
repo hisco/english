@@ -317,7 +317,8 @@ h1 {
 .prompt-card,
 .bag-prompt-card,
 .action-prompt-card,
-.number-prompt-card {
+.number-prompt-card,
+.weather-prompt-card {
   width: min(25rem, 90vw);
   min-height: min(48vh, 22rem);
   border-color: var(--sun);
@@ -325,7 +326,8 @@ h1 {
 
 .bag-prompt-card,
 .action-prompt-card,
-.number-prompt-card {
+.number-prompt-card,
+.weather-prompt-card {
   gap: 0.5rem;
   min-height: min(48vh, 20rem);
 }
@@ -359,6 +361,15 @@ h1 {
   display: flex;
   gap: clamp(0.5rem, 2vw, 1rem);
   justify-content: center;
+}
+
+.weather-symbol {
+  font-size: clamp(6rem, 22vw, 12rem);
+  line-height: 1;
+}
+
+.choice-card .weather-symbol {
+  font-size: clamp(4.5rem, 16vw, 8rem);
 }
 
 .number-symbol {
@@ -405,7 +416,8 @@ h1 {
 
 .pack-bag-screen .choice-card.is-found,
 .action-game-screen .choice-card.is-found,
-.number-game-screen .choice-card.is-found {
+.number-game-screen .choice-card.is-found,
+.weather-game-screen .choice-card.is-found {
   transform: translateY(-0.8rem) scale(0.96);
 }
 
@@ -512,4 +524,94 @@ h1 {
 
 .memory-key:active {
   transform: scale(0.96);
+}
+
+.memory-clear-key {
+  grid-column: span 2;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: clamp(1.35rem, 4vw, 2.2rem);
+}
+
+.celebration-overlay {
+  align-items: center;
+  background: rgba(31, 41, 55, 0.22);
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  overflow: hidden;
+  padding: 1.25rem;
+  position: fixed;
+  z-index: 100;
+}
+
+.celebration-overlay[hidden] {
+  display: none;
+}
+
+.confetti-field {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.confetti-piece {
+  animation: confetti-fall 1500ms ease-out forwards;
+  border-radius: 0.25rem;
+  height: 1.1rem;
+  left: 50%;
+  position: absolute;
+  top: -2rem;
+  transform: translateX(-50%) rotate(0deg);
+  width: 0.7rem;
+}
+
+.celebration-card {
+  align-items: center;
+  animation: celebration-pop 420ms cubic-bezier(0.2, 1.4, 0.3, 1) both;
+  background: #ffffff;
+  border: 0.4rem solid var(--sun);
+  border-radius: 2.2rem;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+  max-width: min(34rem, 92vw);
+  padding: clamp(1.25rem, 4vw, 2rem);
+  text-align: center;
+}
+
+.celebration-emoji {
+  font-size: clamp(4rem, 16vw, 8rem);
+  line-height: 1;
+}
+
+.celebration-message {
+  color: var(--primary-dark);
+  font-size: clamp(2rem, 7vw, 4rem);
+  font-weight: 900;
+  line-height: 1;
+  margin: 0;
+}
+
+@keyframes celebration-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, -2rem, 0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--confetti-x), 105vh, 0) rotate(720deg);
+  }
 }
