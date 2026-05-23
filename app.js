@@ -1171,11 +1171,19 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     state.isMemoryCodeVisible = true;
     elements.memoryLockHelperText.textContent = helperText;
     renderMemoryCodeDisplay();
+    speakHiddenMemoryNumber();
     state.memoryPeekTimerId = window.setTimeout(() => {
       state.isMemoryCodeVisible = false;
       elements.memoryLockHelperText.textContent = "Now type the four numbers.";
       renderMemoryCodeDisplay();
     }, MEMORY_PEEK_MS);
+  }
+  function speakHiddenMemoryNumber() {
+    if (state.memoryMode !== MEMORY_MODES.hidden || state.isMemoryOpen) {
+      return;
+    }
+    const hiddenNumber = getCurrentMemoryCode()[getMemoryHiddenIndex()];
+    void speakText(getMemoryNumberWord(hiddenNumber));
   }
   function clearMemoryPeekTimer() {
     window.clearTimeout(state.memoryPeekTimerId);
