@@ -162,6 +162,21 @@
   ]);
   const MEMORY_KEYPAD_NUMBERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
   const MEMORY_MODES = Object.freeze({ visible: "visible", hidden: "hidden" });
+  const CELEBRATION_MESSAGES = Object.freeze([
+    "You are the winner!",
+    "What a champ!",
+    "You did it!",
+    "Amazing job!",
+    "Super star!",
+    "Fantastic work!",
+    "Great thinking!",
+    "Way to go!",
+    "You opened it!",
+    "Brilliant!"
+  ]);
+  const CONFETTI_COLORS = Object.freeze(["#facc15", "#38bdf8", "#f472b6", "#22c55e", "#fb923c", "#a78bfa"]);
+  const CONFETTI_COUNT = 48;
+  const CELEBRATION_DURATION_MS = 2300;
   const CHOICE_COUNT = 4;
   const WORDS_PER_PACK = 5;
   const LEVELS_PER_PACK = 2;
@@ -252,6 +267,7 @@
     isMemoryCodeVisible: true,
     isMemoryOpen: false,
     memoryPeekTimerId: 0,
+    celebrationTimerId: 0,
     exitTimerId: 0,
     audioContext: null
   };
@@ -303,19 +319,22 @@
     memoryInputDisplay: document.getElementById("memory-input-display"),
     memoryLockHelperText: document.getElementById("memory-lock-helper-text"),
     memoryKeypad: document.getElementById("memory-keypad"),
-    memoryLockParentExit: document.getElementById("memory-lock-parent-exit")
+    memoryLockParentExit: document.getElementById("memory-lock-parent-exit"),
+    celebrationOverlay: document.getElementById("celebration-overlay"),
+    celebrationMessage: document.getElementById("celebration-message"),
+    confettiField: document.getElementById("confetti-field")
   };
   const progress = loadProgress();
   bindEvents();
   renderCurrentRoute();
   registerServiceWorker();
   function bindEvents() {
-    elements.catalogBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.catalogBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindBackButton.addEventListener("click", () => navigateTo(ROUTES.sayFindPacks));
-    elements.packBagBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.actionGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.numberGameBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
-    elements.memoryLockBackButton.addEventListener("click", () => navigateTo(ROUTES.catalog));
+    elements.packBagBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.actionGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.numberGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
@@ -385,6 +404,12 @@
       return;
     }
     window.location.hash = hash;
+  }
+  function navigateToCatalogWithSpeech() {
+    navigateTo(ROUTES.catalog);
+    window.setTimeout(() => {
+      void speakText("game catalog");
+    }, 60);
   }
   function getSayFindPackRoute(packIndex) {
     return `${ROUTES.sayFindPacks}/${packIndex}`;
@@ -545,7 +570,7 @@
     const isPackFinished = state.sayFindScenarioIndex + 1 >= SAY_FIND_SCENARIOS_PER_PACK;
     if (isPackFinished) {
       completeSayFindPack();
-      navigateTo(ROUTES.sayFindPacks);
+      showCompletionCelebration(() => navigateTo(ROUTES.sayFindPacks));
       return;
     }
     state.sayFindScenarioIndex += 1;
@@ -642,7 +667,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "pack-my-bag");
       saveProgress(progress);
-      navigateTo(ROUTES.catalog);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
       return;
     }
     state.bagScenarioIndex += 1;
@@ -742,7 +767,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "who-is-doing-it");
       saveProgress(progress);
-      navigateTo(ROUTES.catalog);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
       return;
     }
     state.actionScenarioIndex += 1;
@@ -836,7 +861,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, "number-find");
       saveProgress(progress);
-      navigateTo(ROUTES.catalog);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
       return;
     }
     state.numberScenarioIndex += 1;
@@ -918,6 +943,7 @@
     if (state.isAdvancing || state.isMemoryOpen || state.memoryInput.length >= MEMORY_CODE_LENGTH) {
       return;
     }
+    void speakText(getMemoryNumberWord(number));
     state.memoryInput.push(number);
     renderMemoryInputDisplay();
     if (state.memoryInput.length !== MEMORY_CODE_LENGTH) {
@@ -932,6 +958,13 @@
   function hasMatchingMemoryInput() {
     const code = getCurrentMemoryCode();
     return code.every((digit, index) => digit === state.memoryInput[index]);
+  }
+  function getMemoryNumberWord(number) {
+    if (number === 0) {
+      return "zero";
+    }
+    const numberItem = NUMBER_ROUNDS.find((item) => item.number === number);
+    return numberItem ? numberItem.word : String(number);
   }
   function openMemoryLock() {
     clearMemoryPeekTimer();
@@ -974,7 +1007,7 @@
     if (isGameFinished) {
       addUnique(progress.completedGameIds, getMemoryGameId());
       saveProgress(progress);
-      navigateTo(ROUTES.catalog);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
       return;
     }
     state.memoryLockIndex += 1;
@@ -1003,6 +1036,38 @@
     if (!values.includes(value)) {
       values.push(value);
     }
+  }
+  function showCompletionCelebration(afterCelebration) {
+    window.clearTimeout(state.celebrationTimerId);
+    elements.celebrationMessage.textContent = getRandomCelebrationMessage();
+    renderConfetti();
+    elements.celebrationOverlay.hidden = false;
+    state.celebrationTimerId = window.setTimeout(() => {
+      hideCompletionCelebration();
+      afterCelebration();
+    }, CELEBRATION_DURATION_MS);
+  }
+  function hideCompletionCelebration() {
+    elements.celebrationOverlay.hidden = true;
+    elements.confettiField.replaceChildren();
+    window.clearTimeout(state.celebrationTimerId);
+    state.celebrationTimerId = 0;
+  }
+  function getRandomCelebrationMessage() {
+    return CELEBRATION_MESSAGES[Math.floor(Math.random() * CELEBRATION_MESSAGES.length)];
+  }
+  function renderConfetti() {
+    const pieces = Array.from({ length: CONFETTI_COUNT }, (_, index) => {
+      const piece = document.createElement("span");
+      const color = CONFETTI_COLORS[index % CONFETTI_COLORS.length];
+      piece.className = "confetti-piece";
+      piece.style.background = color;
+      piece.style.left = `${Math.random() * 100}%`;
+      piece.style.animationDelay = `${Math.random() * 260}ms`;
+      piece.style.setProperty("--confetti-x", `${Math.random() * 80 - 40}vw`);
+      return piece;
+    });
+    elements.confettiField.replaceChildren(...pieces);
   }
   function speakText(text) {
     if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
@@ -1066,6 +1131,9 @@
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
+    }
+    if (!elements.celebrationOverlay.hidden) {
+      hideCompletionCelebration();
     }
     window.speechSynthesis?.cancel();
   }
