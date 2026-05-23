@@ -153,6 +153,20 @@
     Object.freeze({ number: 9, word: "nine" }),
     Object.freeze({ number: 10, word: "ten" })
   ]);
+  const WEATHER_BASE_ROUNDS = Object.freeze([
+    Object.freeze({ word: "sunny", emoji: "☀️" }),
+    Object.freeze({ word: "cloudy", emoji: "☁️" }),
+    Object.freeze({ word: "rainy", emoji: "🌧️" }),
+    Object.freeze({ word: "snowy", emoji: "❄️" }),
+    Object.freeze({ word: "windy", emoji: "💨" })
+  ]);
+  const WEATHER_LEVEL_TWO_ROUNDS = Object.freeze([
+    Object.freeze({ word: "stormy", emoji: "⛈️" }),
+    Object.freeze({ word: "foggy", emoji: "🌫️" }),
+    Object.freeze({ word: "rainbow", emoji: "🌈" }),
+    Object.freeze({ word: "hot", emoji: "🥵" }),
+    Object.freeze({ word: "cold", emoji: "🥶" })
+  ]);
   const MEMORY_CODES = Object.freeze([
     Object.freeze([1, 2, 3, 4]),
     Object.freeze([2, 5, 8, 0]),
@@ -177,7 +191,7 @@
   const CONFETTI_COLORS = Object.freeze(["#facc15", "#38bdf8", "#f472b6", "#22c55e", "#fb923c", "#a78bfa"]);
   const CONFETTI_COUNT = 48;
   const CELEBRATION_DURATION_MS = 2300;
-const LEVELS = Object.freeze({ learn: 1, mix: 2 });
+  const LEVELS = Object.freeze({ learn: 1, mix: 2 });
   const SAY_FIND_LEVEL_TWO_EXTRA_WORDS = Object.freeze({
     "farm-animals": Object.freeze([
       Object.freeze({ word: "duck", emoji: "🦆" }),
@@ -274,6 +288,7 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
   const SAY_FIND_TOTAL_SCENARIOS = SAY_FIND_PACKS.length * SAY_FIND_SCENARIOS_PER_PACK;
   const ACTION_SCENARIOS_PER_GAME = ACTION_BASE_ROUNDS.length * LEVELS_PER_PACK;
   const NUMBER_SCENARIOS_PER_GAME = NUMBER_ROUNDS.length;
+  const WEATHER_SCENARIOS_PER_GAME = WEATHER_BASE_ROUNDS.length * LEVELS_PER_PACK;
   const MEMORY_CODE_LENGTH = 4;
   const MEMORY_PEEK_MS = 2500;
   const EXIT_HOLD_MS = 1600;
@@ -288,6 +303,7 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     packBag: "#/pack-my-bag",
     actionGame: "#/who-is-doing-it",
     numberGame: "#/numbers",
+    weatherGame: "#/weather",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
   });
@@ -325,6 +341,14 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
       actionLabel: "Count 1 to 10"
     }),
     Object.freeze({
+      id: "weather-find",
+      title: "What Is the Weather?",
+      emoji: "☀️ ☁️ 🌧️",
+      color: "#0ea5e9",
+      description: "Hear the weather word and find the matching weather icon.",
+      actionLabel: "Find weather"
+    }),
+    Object.freeze({
       id: "memory-lock",
       title: "Memory Lock",
       emoji: "🔒 1 2",
@@ -348,16 +372,19 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     bagScenarios: [],
     actionScenarios: [],
     numberScenarios: [],
+    weatherScenarios: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
     hasRevealedBagChoices: false,
     hasRevealedActionChoices: false,
     hasRevealedNumberChoices: false,
+    hasRevealedWeatherChoices: false,
     isAdvancing: false,
     bagScenarioIndex: 0,
     actionScenarioIndex: 0,
     numberScenarioIndex: 0,
+    weatherScenarioIndex: 0,
     memoryLockIndex: 0,
     memoryMode: MEMORY_MODES.visible,
     memoryInput: [],
@@ -410,6 +437,13 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     numberGameHelperText: document.getElementById("number-game-helper-text"),
     numberGameProgress: document.getElementById("number-game-progress"),
     numberGameParentExit: document.getElementById("number-game-parent-exit"),
+    weatherGameScreen: document.getElementById("weather-game-screen"),
+    weatherGameBackButton: document.getElementById("weather-game-back-button"),
+    weatherGamePromptCard: document.getElementById("weather-game-prompt-card"),
+    weatherGameChoiceGrid: document.getElementById("weather-game-choice-grid"),
+    weatherGameHelperText: document.getElementById("weather-game-helper-text"),
+    weatherGameProgress: document.getElementById("weather-game-progress"),
+    weatherGameParentExit: document.getElementById("weather-game-parent-exit"),
     memoryLockScreen: document.getElementById("memory-lock-screen"),
     memoryLockBackButton: document.getElementById("memory-lock-back-button"),
     memoryLockCard: document.getElementById("memory-lock-card"),
@@ -441,17 +475,20 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     elements.packBagBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.actionGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.numberGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
     elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
+    elements.weatherGamePromptCard.addEventListener("click", handleWeatherPromptClick);
     elements.memoryLockCard.addEventListener("click", handleMemoryLockClick);
     window.addEventListener("hashchange", renderCurrentRoute);
     bindParentExit(elements.sayFindParentExit, () => navigateTo(ROUTES.sayFindPacks));
     bindParentExit(elements.packBagParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.actionGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.numberGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
@@ -492,6 +529,10 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     }
     if (hash === ROUTES.numberGame) {
       startNumberGame();
+      return;
+    }
+    if (hash === ROUTES.weatherGame) {
+      startWeatherGame();
       return;
     }
     if (hash === ROUTES.memoryLock) {
@@ -590,6 +631,10 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     }
     if (gameId === "number-find") {
       navigateTo(ROUTES.numberGame);
+      return;
+    }
+    if (gameId === "weather-find") {
+      navigateTo(ROUTES.weatherGame);
       return;
     }
     if (gameId === "memory-lock") {
@@ -1047,6 +1092,111 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
   function createNumberScenarios() {
     return isLevelTwo() ? shuffleItems(NUMBER_ROUNDS) : [...NUMBER_ROUNDS];
   }
+  function startWeatherGame() {
+    state.weatherScenarioIndex = 0;
+    state.weatherScenarios = createWeatherScenarios();
+    state.isAdvancing = false;
+    showScreen("weather-game");
+    renderWeatherScenario();
+  }
+  function renderWeatherScenario() {
+    const scenario = getCurrentWeatherScenario();
+    state.hasRevealedWeatherChoices = false;
+    state.isAdvancing = false;
+    elements.weatherGameProgress.textContent = `${state.weatherScenarioIndex + 1} / ${state.weatherScenarios.length}`;
+    elements.weatherGamePromptCard.style.borderColor = "#0ea5e9";
+    elements.weatherGamePromptCard.setAttribute("aria-label", `Hear ${scenario.word}`);
+    elements.weatherGamePromptCard.replaceChildren(createWeatherPromptContent(scenario));
+    elements.weatherGameChoiceGrid.replaceChildren();
+    elements.weatherGameHelperText.textContent = scenario.hasPicture ? "Tap the big card to hear the weather." : "Tap the sound card, then find the weather.";
+  }
+  function createWeatherPromptContent(scenario) {
+    const fragment = document.createDocumentFragment();
+    const icon = document.createElement("span");
+    const label = document.createElement("span");
+    icon.className = scenario.hasPicture ? "weather-symbol" : "sound-only";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = scenario.hasPicture ? scenario.emoji : "🔊";
+    label.className = "word-label";
+    label.textContent = scenario.word;
+    fragment.append(icon, label);
+    return fragment;
+  }
+  function handleWeatherPromptClick() {
+    const scenario = getCurrentWeatherScenario();
+    void speakText(scenario.word);
+    if (state.hasRevealedWeatherChoices) {
+      return;
+    }
+    state.hasRevealedWeatherChoices = true;
+    elements.weatherGameHelperText.textContent = "Tap the weather icons. Every icon speaks.";
+    renderWeatherChoices(scenario);
+  }
+  function renderWeatherChoices(scenario) {
+    const choiceCards = createWeatherChoices(scenario).map((choice) => createWeatherChoiceCard(choice, scenario.word));
+    elements.weatherGameChoiceGrid.replaceChildren(...choiceCards);
+  }
+  function createWeatherChoices(scenario) {
+    const otherItems = getWeatherChoicePool().filter((item) => item.word !== scenario.word);
+    return shuffleItems([scenario, ...shuffleItems(otherItems).slice(0, CHOICE_COUNT - 1)]);
+  }
+  function createWeatherChoiceCard(choice, answerWord) {
+    const button = document.createElement("button");
+    button.className = "card choice-card";
+    button.type = "button";
+    button.setAttribute("aria-label", choice.word);
+    button.innerHTML = `
+      <span class="weather-symbol" aria-hidden="true">${choice.emoji}</span>
+      <span class="word-label">${choice.word}</span>
+    `;
+    button.addEventListener("click", () => handleWeatherChoiceClick(choice, answerWord, button));
+    return button;
+  }
+  async function handleWeatherChoiceClick(choice, answerWord, button) {
+    if (state.isAdvancing) {
+      return;
+    }
+    if (choice.word !== answerWord) {
+      await speakText(choice.word);
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(choice.word);
+    playHappySound();
+    window.setTimeout(advanceWeatherScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceWeatherScenario() {
+    const isGameFinished = state.weatherScenarioIndex + 1 >= state.weatherScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "weather-find");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.weatherScenarioIndex += 1;
+    renderWeatherScenario();
+  }
+  function getCurrentWeatherScenario() {
+    if (state.weatherScenarios.length === 0) {
+      state.weatherScenarios = createWeatherScenarios();
+    }
+    return state.weatherScenarios[state.weatherScenarioIndex];
+  }
+  function createWeatherScenarios() {
+    if (!isLevelTwo()) {
+      return WEATHER_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
+        WEATHER_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: false }))
+      );
+    }
+    return shuffleItems(getWeatherChoicePool()).slice(0, WEATHER_SCENARIOS_PER_GAME).map((item, index) => Object.freeze({
+      ...item,
+      hasPicture: index % 3 !== 1
+    }));
+  }
+  function getWeatherChoicePool() {
+    return isLevelTwo() ? WEATHER_BASE_ROUNDS.concat(WEATHER_LEVEL_TWO_ROUNDS) : WEATHER_BASE_ROUNDS;
+  }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
     state.memoryMode = memoryMode;
@@ -1338,6 +1488,7 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     elements.packBagScreen.classList.toggle("screen-active", screenName === "pack-bag");
     elements.actionGameScreen.classList.toggle("screen-active", screenName === "action-game");
     elements.numberGameScreen.classList.toggle("screen-active", screenName === "number-game");
+    elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
@@ -1407,6 +1558,7 @@ const LEVELS = Object.freeze({ learn: 1, mix: 2 });
     getPackBagScenarioCount: () => BAG_ROUNDS.length,
     getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME,
     getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME,
+    getWeatherScenarioCount: () => WEATHER_SCENARIOS_PER_GAME,
     getMemoryLockCount: () => MEMORY_CODES.length,
     getCurrentLevel: () => progress.level
   });
