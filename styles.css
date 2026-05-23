@@ -22,9 +22,18 @@
 html,
 body {
   min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
+  min-height: 100dvh;
   margin: 0;
   background:
     radial-gradient(circle at 12% 18%, rgba(250, 204, 21, 0.35), transparent 24rem),
@@ -35,15 +44,18 @@ body {
   overscroll-behavior: none;
   touch-action: manipulation;
   user-select: none;
+  -webkit-user-select: none;
 }
 
 button {
   font: inherit;
+  touch-action: manipulation;
 }
 
 .app-shell {
   min-height: 100vh;
   min-height: 100svh;
+  min-height: 100dvh;
   padding: clamp(1rem, 2vw, 2rem);
 }
 
@@ -238,6 +250,10 @@ h1 {
 
 .game-screen {
   position: relative;
+}
+
+.game-screen.screen-active {
+  min-height: calc(100dvh - clamp(2rem, 4vw, 4rem));
 }
 
 .parent-exit {
@@ -613,5 +629,61 @@ h1 {
   100% {
     opacity: 0;
     transform: translate3d(var(--confetti-x), 105vh, 0) rotate(720deg);
+  }
+}
+
+@media (max-height: 760px) {
+  .app-shell {
+    padding: clamp(0.5rem, 1.5vw, 1rem);
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 4.2rem);
+  }
+  .game-header {
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .prompt-area,
+  .bag-stage,
+  .memory-stage {
+    gap: 0.5rem;
+    margin-bottom: clamp(0.6rem, 2vw, 1rem);
+  }
+  .prompt-card,
+  .bag-prompt-card,
+  .action-prompt-card,
+  .number-prompt-card,
+  .weather-prompt-card {
+    min-height: min(34vh, 15rem);
+  }
+  .choice-card {
+    min-height: clamp(6.5rem, 18vw, 9rem);
+  }
+  .emoji,
+  .choice-card .number-symbol,
+  .choice-card .weather-symbol {
+    font-size: clamp(3.4rem, 12vw, 6rem);
+  }
+  .prompt-card .emoji,
+  .bag-emoji,
+  .action-pair,
+  .weather-symbol,
+  .number-symbol {
+    font-size: clamp(4.4rem, 16vw, 8rem);
+  }
+  .memory-lock-card {
+    min-height: min(25vh, 11rem);
+  }
+  .memory-lock-icon {
+    font-size: clamp(3.8rem, 14vw, 6rem);
+  }
+  .memory-digit,
+  .memory-input-slot,
+  .memory-key {
+    font-size: clamp(1.5rem, 6vw, 2.8rem);
+    min-height: clamp(3.2rem, 10vw, 4.25rem);
+  }
+  .memory-key {
+    min-height: clamp(3.2rem, 9vw, 4rem);
   }
 }

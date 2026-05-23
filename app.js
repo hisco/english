@@ -463,6 +463,7 @@
   };
   const progress = loadProgress();
   bindEvents();
+  bindViewportGuards();
   renderCurrentRoute();
   registerServiceWorker();
   function bindEvents() {
@@ -496,6 +497,32 @@
     element.addEventListener("pointerup", () => cancelParentExitHold(element));
     element.addEventListener("pointercancel", () => cancelParentExitHold(element));
     element.addEventListener("pointerleave", () => cancelParentExitHold(element));
+  }
+  function bindViewportGuards() {
+    let lastTouchEndTime = 0;
+    document.addEventListener("gesturestart", preventGestureDefault, { passive: false });
+    document.addEventListener("gesturechange", preventGestureDefault, { passive: false });
+    document.addEventListener("gestureend", preventGestureDefault, { passive: false });
+    document.addEventListener("touchmove", (event) => {
+      if (event.touches.length > 1) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+    document.addEventListener("touchend", (event) => {
+      const currentTime = Date.now();
+      if (currentTime - lastTouchEndTime < 320) {
+        event.preventDefault();
+      }
+      lastTouchEndTime = currentTime;
+    }, { passive: false });
+    window.addEventListener("wheel", (event) => {
+      if (event.ctrlKey) {
+        event.preventDefault();
+      }
+    }, { passive: false });
+  }
+  function preventGestureDefault(event) {
+    event.preventDefault();
   }
   function renderCurrentRoute() {
     const hash = window.location.hash || ROUTES.catalog;
