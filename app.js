@@ -1,5 +1,10 @@
 (function initializeApplication() {
   "use strict";
+  const APP_BUILD = Object.freeze({
+    version: "2026.05.24.1",
+    label: "2026-05-24 build 1",
+    cacheName: "little-english-games-v16"
+  });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
       id: "farm-animals",
@@ -407,6 +412,8 @@
     settingsBackButton: document.getElementById("settings-back-button"),
     levelOneButton: document.getElementById("level-one-button"),
     levelTwoButton: document.getElementById("level-two-button"),
+    buildVersion: document.getElementById("build-version"),
+    buildCache: document.getElementById("build-cache"),
     catalogBackButton: document.getElementById("catalog-back-button"),
     packGrid: document.getElementById("pack-grid"),
     sayFindBackButton: document.getElementById("say-find-back-button"),
@@ -617,7 +624,12 @@
   function renderSettings() {
     elements.levelOneButton.classList.toggle("is-selected", progress.level === LEVELS.learn);
     elements.levelTwoButton.classList.toggle("is-selected", progress.level === LEVELS.mix);
+    renderBuildInfo();
     showScreen("settings");
+  }
+  function renderBuildInfo() {
+    elements.buildVersion.textContent = APP_BUILD.label;
+    elements.buildCache.textContent = `Cache ${APP_BUILD.cacheName}`;
   }
   function setGameLevel(level) {
     progress.level = level;
@@ -1618,7 +1630,8 @@
     getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME,
     getWeatherScenarioCount: () => WEATHER_SCENARIOS_PER_GAME,
     getMemoryLockCount: () => MEMORY_CODES.length,
-    getCurrentLevel: () => progress.level
+    getCurrentLevel: () => progress.level,
+    getBuildInfo: () => APP_BUILD
   });
   window.SayFindEnglishGame = Object.freeze({
     getPackCount: () => SAY_FIND_PACKS.length,
