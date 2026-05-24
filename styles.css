@@ -167,6 +167,40 @@ h1 {
   font-weight: 800;
 }
 
+
+.build-card {
+  border: 0.25rem solid #ddd6fe;
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  display: grid;
+  gap: 0.35rem;
+  margin: clamp(1rem, 2.2vw, 1.5rem) auto 0;
+  max-width: 34rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.build-title {
+  color: var(--primary-dark);
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.build-value {
+  font-size: clamp(1.1rem, 3vw, 1.45rem);
+  font-weight: 900;
+}
+
+.build-copy {
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
 .catalog-grid,
 .pack-grid {
   display: grid;
