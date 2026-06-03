@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.9",
-    label: "2026-06-03 build 9",
-    cacheName: "little-english-games-v24"
+    version: "2026.06.03.10",
+    label: "2026-06-03 build 10",
+    cacheName: "little-english-games-v25"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -233,6 +233,8 @@
     Object.freeze({ title: "Old Farm", picture: "🚜", notes: Object.freeze(["do", "do", "do", "sol", "la", "la", "sol"]) })
   ]);
   const MUSIC_SESSION_COUNT = 3;
+  const MATH_SESSION_COUNT = 5;
+  const MATH_TOKEN_COUNT = 5;
   const MEMORY_LOCK_COUNT = 5;
   const MEMORY_KEYPAD_NUMBERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
   const MEMORY_MODES = Object.freeze({ visible: "visible", hidden: "hidden" });
@@ -366,6 +368,7 @@
     weatherGame: "#/weather",
     whoAmI: "#/who-am-i",
     musicGame: "#/music",
+    mathGame: "#/math",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
   });
@@ -427,6 +430,14 @@
       actionLabel: "Play music"
     }),
     Object.freeze({
+      id: "math-reveal",
+      title: "Math Reveal",
+      emoji: "1 + 1",
+      color: "#14b8a6",
+      description: "Reveal a simple math problem one box at a time.",
+      actionLabel: "Solve math"
+    }),
+    Object.freeze({
       id: "memory-lock",
       title: "Memory Lock",
       emoji: "🔒 1 2",
@@ -453,6 +464,7 @@
     weatherScenarios: [],
     quizScenarios: [],
     musicTunes: [],
+    mathProblems: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
@@ -470,6 +482,8 @@
     quizClueIndex: 0,
     musicTuneIndex: 0,
     musicNoteIndex: 0,
+    mathProblemIndex: 0,
+    mathRevealIndex: 0,
     memoryLockIndex: 0,
     memoryMode: MEMORY_MODES.visible,
     memoryInput: [],
@@ -546,6 +560,12 @@
     musicKeyboard: document.getElementById("music-keyboard"),
     musicGameProgress: document.getElementById("music-game-progress"),
     musicGameParentExit: document.getElementById("music-game-parent-exit"),
+    mathGameScreen: document.getElementById("math-game-screen"),
+    mathGameBackButton: document.getElementById("math-game-back-button"),
+    mathTokenRow: document.getElementById("math-token-row"),
+    mathGameHelperText: document.getElementById("math-game-helper-text"),
+    mathGameProgress: document.getElementById("math-game-progress"),
+    mathGameParentExit: document.getElementById("math-game-parent-exit"),
     memoryLockScreen: document.getElementById("memory-lock-screen"),
     memoryLockBackButton: document.getElementById("memory-lock-back-button"),
     memoryLockCard: document.getElementById("memory-lock-card"),
@@ -581,6 +601,7 @@
     elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.whoAmIBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.musicGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.mathGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
@@ -597,6 +618,7 @@
     bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.whoAmIParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.musicGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.mathGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
@@ -684,6 +706,10 @@
     }
     if (hash === ROUTES.musicGame) {
       startMusicGame();
+      return;
+    }
+    if (hash === ROUTES.mathGame) {
+      startMathGame();
       return;
     }
     if (hash === ROUTES.memoryLock) {
@@ -799,6 +825,10 @@
     }
     if (gameId === "music-time") {
       navigateTo(ROUTES.musicGame);
+      return;
+    }
+    if (gameId === "math-reveal") {
+      navigateTo(ROUTES.mathGame);
       return;
     }
     if (gameId === "memory-lock") {
@@ -1528,6 +1558,120 @@
   function getMusicNoteById(noteId) {
     return MUSIC_NOTES.find((note) => note.id === noteId);
   }
+  function startMathGame() {
+    state.mathProblemIndex = 0;
+    state.mathRevealIndex = 0;
+    state.mathProblems = createMathProblems();
+    state.isAdvancing = false;
+    showScreen("math");
+    renderMathProblem();
+  }
+  function renderMathProblem() {
+    state.mathRevealIndex = 0;
+    state.isAdvancing = false;
+    elements.mathGameProgress.textContent = `${state.mathProblemIndex + 1} / ${state.mathProblems.length}`;
+    elements.mathGameHelperText.textContent = "Tap the glowing box.";
+    renderMathTokens();
+  }
+  function renderMathTokens() {
+    const problem = getCurrentMathProblem();
+    const tokenButtons = problem.tokens.map((token, index) => {
+      const button = document.createElement("button");
+      const isRevealed = index < state.mathRevealIndex;
+      const isNext = index === state.mathRevealIndex;
+      button.className = `math-token ${isRevealed ? "is-revealed" : "is-hidden"} ${isNext ? "is-next" : ""}`;
+      button.type = "button";
+      button.setAttribute("aria-label", isRevealed ? token.speech : "Reveal next math part");
+      button.textContent = isRevealed ? token.display : "";
+      button.addEventListener("click", () => handleMathTokenClick(index));
+      return button;
+    });
+    elements.mathTokenRow.replaceChildren(...tokenButtons);
+  }
+  function handleMathTokenClick(index) {
+    if (state.isAdvancing || index !== state.mathRevealIndex) {
+      return;
+    }
+    const problem = getCurrentMathProblem();
+    const token = problem.tokens[index];
+    void speakText(token.speech);
+    state.mathRevealIndex += 1;
+    renderMathTokens();
+    if (state.mathRevealIndex < MATH_TOKEN_COUNT) {
+      elements.mathGameHelperText.textContent = "Good. Tap the next box.";
+      return;
+    }
+    finishMathProblem();
+  }
+  function finishMathProblem() {
+    state.isAdvancing = true;
+    elements.mathGameHelperText.textContent = "You solved it!";
+    playHappySound();
+    window.setTimeout(advanceMathProblem, NEXT_SCENARIO_DELAY_MS + 500);
+  }
+  function advanceMathProblem() {
+    const isGameFinished = state.mathProblemIndex + 1 >= state.mathProblems.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "math-reveal");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.mathProblemIndex += 1;
+    renderMathProblem();
+  }
+  function getCurrentMathProblem() {
+    if (state.mathProblems.length === 0) {
+      state.mathProblems = createMathProblems();
+    }
+    return state.mathProblems[state.mathProblemIndex];
+  }
+  function createMathProblems() {
+    const problems = [];
+    while (problems.length < MATH_SESSION_COUNT) {
+      const problem = createRandomMathProblem();
+      const key = problem.tokens.map((token) => token.display).join(" ");
+      const hasDuplicate = problems.some((existingProblem) => existingProblem.tokens.map((token) => token.display).join(" ") === key);
+      if (!hasDuplicate) {
+        problems.push(problem);
+      }
+    }
+    return problems;
+  }
+  function createRandomMathProblem() {
+    const useAddition = Math.random() >= 0.35;
+    if (useAddition) {
+      return createAdditionProblem();
+    }
+    return createSubtractionProblem();
+  }
+  function createAdditionProblem() {
+    const first = Math.floor(Math.random() * 10);
+    const minResult = Math.max(1, first);
+    const result = minResult + Math.floor(Math.random() * (10 - minResult + 1));
+    const second = result - first;
+    return createMathProblem({ first, operator: "+", second, result });
+  }
+  function createSubtractionProblem() {
+    const first = 1 + Math.floor(Math.random() * 9);
+    const result = 1 + Math.floor(Math.random() * first);
+    const second = first - result;
+    return createMathProblem({ first, operator: "−", second, result });
+  }
+  function createMathProblem(values) {
+    return Object.freeze({
+      tokens: Object.freeze([
+        createMathToken(String(values.first), getMemoryNumberWord(values.first)),
+        createMathToken(values.operator, values.operator === "+" ? "plus" : "minus"),
+        createMathToken(String(values.second), getMemoryNumberWord(values.second)),
+        createMathToken("=", "equals"),
+        createMathToken(String(values.result), getMemoryNumberWord(values.result))
+      ])
+    });
+  }
+  function createMathToken(display, speech) {
+    return Object.freeze({ display, speech });
+  }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
     state.memoryMode = memoryMode;
@@ -1873,7 +2017,7 @@
     oscillator.stop(options.startTime + duration);
   }
   function showScreen(screenName) {
-    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "music", "memory-lock"].includes(screenName);
+    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "music", "math", "memory-lock"].includes(screenName);
     updateAppViewportHeight();
     document.body.classList.toggle("is-game-active", isGameScreen);
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
@@ -1886,6 +2030,7 @@
     elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
     elements.whoAmIScreen.classList.toggle("screen-active", screenName === "who-am-i");
     elements.musicGameScreen.classList.toggle("screen-active", screenName === "music");
+    elements.mathGameScreen.classList.toggle("screen-active", screenName === "math");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
@@ -1960,6 +2105,7 @@
     getQuizSessionCount: () => QUIZ_SESSION_COUNT,
     getMusicTuneCount: () => MUSIC_TUNES.length,
     getMusicSessionCount: () => MUSIC_SESSION_COUNT,
+    getMathSessionCount: () => MATH_SESSION_COUNT,
     getMemoryLockCount: () => MEMORY_LOCK_COUNT,
     getCurrentLevel: () => progress.level,
     getBuildInfo: () => APP_BUILD
