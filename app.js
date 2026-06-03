@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.5",
-    label: "2026-06-03 build 5",
-    cacheName: "little-english-games-v20"
+    version: "2026.06.03.6",
+    label: "2026-06-03 build 6",
+    cacheName: "little-english-games-v21"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -818,16 +818,9 @@
     const packWords = getSayFindPackWords(pack);
     if (!isLevelTwo()) {
       const levelOneWords = packWords.slice(0, WORDS_PER_PACK);
-      const pictureWords = shuffleItems(levelOneWords);
-      const soundWords = shuffleItems(levelOneWords);
-      return pictureWords.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
-        soundWords.map((item) => Object.freeze({ ...item, hasPicture: false }))
-      );
+      return createPairedPromptScenarios(levelOneWords);
     }
-    return shuffleItems(packWords).slice(0, SAY_FIND_SCENARIOS_PER_PACK).map((item, index) => Object.freeze({
-      ...item,
-      hasPicture: index % 3 !== 1
-    }));
+    return createRandomPromptScenarios(shuffleItems(packWords).slice(0, SAY_FIND_SCENARIOS_PER_PACK));
   }
   function getSayFindPackWords(pack) {
     return pack.words.concat(SAY_FIND_LEVEL_TWO_EXTRA_WORDS[pack.id] || []);
@@ -1029,16 +1022,9 @@
   }
   function createActionScenarios() {
     if (!isLevelTwo()) {
-      const pictureRounds = shuffleItems(ACTION_BASE_ROUNDS);
-      const soundRounds = shuffleItems(ACTION_BASE_ROUNDS);
-      return pictureRounds.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
-        soundRounds.map((item) => Object.freeze({ ...item, hasPicture: false }))
-      );
+      return createPairedPromptScenarios(ACTION_BASE_ROUNDS);
     }
-    return shuffleItems(getActionChoicePool()).slice(0, ACTION_SCENARIOS_PER_GAME).map((item, index) => Object.freeze({
-      ...item,
-      hasPicture: index % 2 === 0
-    }));
+    return createRandomPromptScenarios(shuffleItems(getActionChoicePool()).slice(0, ACTION_SCENARIOS_PER_GAME));
   }
   function getActionChoicePool() {
     return isLevelTwo() ? ACTION_BASE_ROUNDS.concat(ACTION_LEVEL_TWO_ROUNDS) : ACTION_BASE_ROUNDS;
@@ -1231,16 +1217,9 @@
   }
   function createWeatherScenarios() {
     if (!isLevelTwo()) {
-      const pictureRounds = shuffleItems(WEATHER_BASE_ROUNDS);
-      const soundRounds = shuffleItems(WEATHER_BASE_ROUNDS);
-      return pictureRounds.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
-        soundRounds.map((item) => Object.freeze({ ...item, hasPicture: false }))
-      );
+      return createPairedPromptScenarios(WEATHER_BASE_ROUNDS);
     }
-    return shuffleItems(getWeatherChoicePool()).slice(0, WEATHER_SCENARIOS_PER_GAME).map((item, index) => Object.freeze({
-      ...item,
-      hasPicture: index % 3 !== 1
-    }));
+    return createRandomPromptScenarios(shuffleItems(getWeatherChoicePool()).slice(0, WEATHER_SCENARIOS_PER_GAME));
   }
   function getWeatherChoicePool() {
     return isLevelTwo() ? WEATHER_BASE_ROUNDS.concat(WEATHER_LEVEL_TWO_ROUNDS) : WEATHER_BASE_ROUNDS;
@@ -1451,6 +1430,34 @@
   }
   function getMemoryGameId() {
     return state.memoryMode === MEMORY_MODES.hidden ? "memory-lock-hidden" : "memory-lock";
+  }
+  function createPairedPromptScenarios(items) {
+    const scenarios = items.flatMap((item) => [
+      Object.freeze({ ...item, hasPicture: true }),
+      Object.freeze({ ...item, hasPicture: false })
+    ]);
+    return shuffleItems(scenarios);
+  }
+  function createRandomPromptScenarios(items) {
+    const scenarios = items.map((item) => Object.freeze({
+      ...item,
+      hasPicture: Math.random() >= 0.4
+    }));
+    return ensureMixedPromptModes(scenarios);
+  }
+  function ensureMixedPromptModes(scenarios) {
+    if (scenarios.length < 2) {
+      return scenarios;
+    }
+    const hasPicturePrompt = scenarios.some((scenario) => scenario.hasPicture);
+    const hasSoundPrompt = scenarios.some((scenario) => !scenario.hasPicture);
+    if (hasPicturePrompt && hasSoundPrompt) {
+      return scenarios;
+    }
+    const indexToFlip = Math.floor(Math.random() * scenarios.length);
+    return scenarios.map((scenario, index) => index === indexToFlip
+      ? Object.freeze({ ...scenario, hasPicture: !scenario.hasPicture })
+      : scenario);
   }
   function shuffleItems(items) {
     const shuffledItems = [...items];
