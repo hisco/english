@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.2",
-    label: "2026-06-03 build 2",
-    cacheName: "little-english-games-v17"
+    version: "2026.06.03.3",
+    label: "2026-06-03 build 3",
+    cacheName: "little-english-games-v18"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -824,8 +824,10 @@
     const packWords = getSayFindPackWords(pack);
     if (!isLevelTwo()) {
       const levelOneWords = packWords.slice(0, WORDS_PER_PACK);
-      return levelOneWords.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
-        levelOneWords.map((item) => Object.freeze({ ...item, hasPicture: false }))
+      const pictureWords = shuffleItems(levelOneWords);
+      const soundWords = shuffleItems(levelOneWords);
+      return pictureWords.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
+        soundWords.map((item) => Object.freeze({ ...item, hasPicture: false }))
       );
     }
     return shuffleItems(packWords).slice(0, SAY_FIND_SCENARIOS_PER_PACK).map((item, index) => Object.freeze({
@@ -924,7 +926,7 @@
   }
   function createPackBagScenarios() {
     const pool = isLevelTwo() ? BAG_ROUNDS.concat(BAG_LEVEL_TWO_ITEMS) : BAG_ROUNDS;
-    return isLevelTwo() ? shuffleItems(pool).slice(0, BAG_ROUNDS.length) : [...BAG_ROUNDS];
+    return isLevelTwo() ? shuffleItems(pool).slice(0, BAG_ROUNDS.length) : shuffleItems(BAG_ROUNDS);
   }
   function getPackBagPhrase(word) {
     return `Pack the ${word}`;
@@ -1033,8 +1035,10 @@
   }
   function createActionScenarios() {
     if (!isLevelTwo()) {
-      return ACTION_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
-        ACTION_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: false }))
+      const pictureRounds = shuffleItems(ACTION_BASE_ROUNDS);
+      const soundRounds = shuffleItems(ACTION_BASE_ROUNDS);
+      return pictureRounds.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
+        soundRounds.map((item) => Object.freeze({ ...item, hasPicture: false }))
       );
     }
     return shuffleItems(getActionChoicePool()).slice(0, ACTION_SCENARIOS_PER_GAME).map((item, index) => Object.freeze({
@@ -1095,7 +1099,7 @@
       return shuffleItems([scenario, ...shuffleItems(others).slice(0, CHOICE_COUNT - 1)]);
     }
     const firstNumber = Math.min(Math.max(scenario.number - 1, 1), NUMBER_ROUNDS.length - CHOICE_COUNT + 1);
-    return NUMBER_ROUNDS.slice(firstNumber - 1, firstNumber - 1 + CHOICE_COUNT);
+    return shuffleItems(NUMBER_ROUNDS.slice(firstNumber - 1, firstNumber - 1 + CHOICE_COUNT));
   }
   function createNumberChoiceCard(choice, answerNumber) {
     const button = document.createElement("button");
@@ -1138,7 +1142,7 @@
     return state.numberScenarios[state.numberScenarioIndex];
   }
   function createNumberScenarios() {
-    return isLevelTwo() ? shuffleItems(NUMBER_ROUNDS) : [...NUMBER_ROUNDS];
+    return shuffleItems(NUMBER_ROUNDS);
   }
   function startWeatherGame() {
     state.weatherScenarioIndex = 0;
@@ -1233,8 +1237,10 @@
   }
   function createWeatherScenarios() {
     if (!isLevelTwo()) {
-      return WEATHER_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
-        WEATHER_BASE_ROUNDS.map((item) => Object.freeze({ ...item, hasPicture: false }))
+      const pictureRounds = shuffleItems(WEATHER_BASE_ROUNDS);
+      const soundRounds = shuffleItems(WEATHER_BASE_ROUNDS);
+      return pictureRounds.map((item) => Object.freeze({ ...item, hasPicture: true })).concat(
+        soundRounds.map((item) => Object.freeze({ ...item, hasPicture: false }))
       );
     }
     return shuffleItems(getWeatherChoicePool()).slice(0, WEATHER_SCENARIOS_PER_GAME).map((item, index) => Object.freeze({
@@ -1425,7 +1431,7 @@
   }
   function createMemoryCodes() {
     if (!isLevelTwo()) {
-      return MEMORY_CODES.map((code) => Object.freeze([...code]));
+      return shuffleItems(MEMORY_CODES).map((code) => Object.freeze([...code]));
     }
     return Array.from({ length: MEMORY_CODES.length }, () => Object.freeze(
       Array.from({ length: MEMORY_CODE_LENGTH }, () => Math.floor(Math.random() * 10))
@@ -1433,7 +1439,7 @@
   }
   function createMemoryHiddenIndexes() {
     if (!isLevelTwo()) {
-      return MEMORY_CODES.map((_, index) => index % MEMORY_CODE_LENGTH);
+      return shuffleItems(MEMORY_CODES.map((_, index) => index % MEMORY_CODE_LENGTH));
     }
     return MEMORY_CODES.map(() => Math.floor(Math.random() * MEMORY_CODE_LENGTH));
   }
