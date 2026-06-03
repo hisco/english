@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.3",
-    label: "2026-06-03 build 3",
-    cacheName: "little-english-games-v18"
+    version: "2026.06.03.4",
+    label: "2026-06-03 build 4",
+    cacheName: "little-english-games-v19"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -1430,12 +1430,26 @@
     return state.memoryCodes[state.memoryLockIndex];
   }
   function createMemoryCodes() {
-    if (!isLevelTwo()) {
-      return shuffleItems(MEMORY_CODES).map((code) => Object.freeze([...code]));
+    const codes = [];
+    while (codes.length < MEMORY_CODES.length) {
+      const code = createRandomMemoryCode();
+      const key = getMemoryCodeKey(code);
+      const hasDuplicate = codes.some((existingCode) => getMemoryCodeKey(existingCode) === key);
+      if (!hasDuplicate && !isPresetMemoryCode(code)) {
+        codes.push(Object.freeze(code));
+      }
     }
-    return Array.from({ length: MEMORY_CODES.length }, () => Object.freeze(
-      Array.from({ length: MEMORY_CODE_LENGTH }, () => Math.floor(Math.random() * 10))
-    ));
+    return codes;
+  }
+  function createRandomMemoryCode() {
+    return Array.from({ length: MEMORY_CODE_LENGTH }, () => Math.floor(Math.random() * 10));
+  }
+  function isPresetMemoryCode(code) {
+    const key = getMemoryCodeKey(code);
+    return MEMORY_CODES.some((presetCode) => getMemoryCodeKey(presetCode) === key);
+  }
+  function getMemoryCodeKey(code) {
+    return code.join("");
   }
   function createMemoryHiddenIndexes() {
     if (!isLevelTwo()) {
