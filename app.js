@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.9",
-    label: "2026-06-03 build 9",
-    cacheName: "little-english-games-v24"
+    version: "2026.06.03.11",
+    label: "2026-06-03 build 11",
+    cacheName: "little-english-games-v26"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -1498,7 +1498,7 @@
     if (!audioContext) {
       return;
     }
-    playTone({ audioContext, frequency: note.frequency, startTime: audioContext.currentTime, duration: 0.32, gainValue: 0.18 });
+    playTone({ audioContext, frequency: note.frequency, startTime: audioContext.currentTime, duration: 0.62, gainValue: 0.34 });
   }
   function finishMusicTune() {
     state.isAdvancing = true;
