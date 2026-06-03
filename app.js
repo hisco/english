@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.11",
-    label: "2026-06-03 build 11",
-    cacheName: "little-english-games-v26"
+    version: "2026.06.03.12",
+    label: "2026-06-03 build 12",
+    cacheName: "little-english-games-v27"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -215,6 +215,21 @@
     Object.freeze({ answer: "toothbrush", emoji: "🪥", clueIcons: Object.freeze(["🦷", "🫧"]), clues: Object.freeze(["I clean teeth.", "Use me every day."]) })
   ]);
   const QUIZ_SESSION_COUNT = 5;
+  const COUNTING_ITEM_POOL = Object.freeze(["🍎", "🍌", "🍪", "⭐", "⚽", "🧸", "🚗", "🐟", "🌼", "🎈", "🧩", "🥕"]);
+  const COUNTING_SESSION_COUNT = 5;
+  const FEELING_ITEMS = Object.freeze([
+    Object.freeze({ word: "happy", emoji: "😀" }),
+    Object.freeze({ word: "sad", emoji: "😢" }),
+    Object.freeze({ word: "angry", emoji: "😠" }),
+    Object.freeze({ word: "surprised", emoji: "😮" }),
+    Object.freeze({ word: "sleepy", emoji: "😴" }),
+    Object.freeze({ word: "scared", emoji: "😨" }),
+    Object.freeze({ word: "silly", emoji: "🤪" }),
+    Object.freeze({ word: "love", emoji: "😍" }),
+    Object.freeze({ word: "crying", emoji: "😭" }),
+    Object.freeze({ word: "confused", emoji: "😕" })
+  ]);
+  const FEELINGS_SESSION_COUNT = 5;
   const MUSIC_NOTES = Object.freeze([
     Object.freeze({ id: "do", label: "Do", frequency: 261.63 }),
     Object.freeze({ id: "re", label: "Re", frequency: 293.66 }),
@@ -366,6 +381,8 @@
     weatherGame: "#/weather",
     whoAmI: "#/who-am-i",
     musicGame: "#/music",
+    countingGame: "#/counting",
+    feelingsGame: "#/feelings",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
   });
@@ -427,6 +444,22 @@
       actionLabel: "Play music"
     }),
     Object.freeze({
+      id: "counting-game",
+      title: "Counting",
+      emoji: "🍎 🍌 ⭐",
+      color: "#22c55e",
+      description: "Count the emoji items and tap the matching number.",
+      actionLabel: "Count items"
+    }),
+    Object.freeze({
+      id: "feelings-find",
+      title: "Feelings",
+      emoji: "😀 😢 😮",
+      color: "#f472b6",
+      description: "Hear a feeling and choose the matching face.",
+      actionLabel: "Find feelings"
+    }),
+    Object.freeze({
       id: "memory-lock",
       title: "Memory Lock",
       emoji: "🔒 1 2",
@@ -453,6 +486,8 @@
     weatherScenarios: [],
     quizScenarios: [],
     musicTunes: [],
+    countingScenarios: [],
+    feelingsScenarios: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
@@ -461,6 +496,7 @@
     hasRevealedNumberChoices: false,
     hasRevealedWeatherChoices: false,
     hasRevealedQuizChoices: false,
+    hasRevealedFeelingsChoices: false,
     isAdvancing: false,
     bagScenarioIndex: 0,
     actionScenarioIndex: 0,
@@ -470,6 +506,8 @@
     quizClueIndex: 0,
     musicTuneIndex: 0,
     musicNoteIndex: 0,
+    countingScenarioIndex: 0,
+    feelingsScenarioIndex: 0,
     memoryLockIndex: 0,
     memoryMode: MEMORY_MODES.visible,
     memoryInput: [],
@@ -546,6 +584,20 @@
     musicKeyboard: document.getElementById("music-keyboard"),
     musicGameProgress: document.getElementById("music-game-progress"),
     musicGameParentExit: document.getElementById("music-game-parent-exit"),
+    countingGameScreen: document.getElementById("counting-game-screen"),
+    countingGameBackButton: document.getElementById("counting-game-back-button"),
+    countingItemsCard: document.getElementById("counting-items-card"),
+    countingKeypad: document.getElementById("counting-keypad"),
+    countingGameHelperText: document.getElementById("counting-game-helper-text"),
+    countingGameProgress: document.getElementById("counting-game-progress"),
+    countingGameParentExit: document.getElementById("counting-game-parent-exit"),
+    feelingsGameScreen: document.getElementById("feelings-game-screen"),
+    feelingsGameBackButton: document.getElementById("feelings-game-back-button"),
+    feelingsGamePromptCard: document.getElementById("feelings-game-prompt-card"),
+    feelingsGameChoiceGrid: document.getElementById("feelings-game-choice-grid"),
+    feelingsGameHelperText: document.getElementById("feelings-game-helper-text"),
+    feelingsGameProgress: document.getElementById("feelings-game-progress"),
+    feelingsGameParentExit: document.getElementById("feelings-game-parent-exit"),
     memoryLockScreen: document.getElementById("memory-lock-screen"),
     memoryLockBackButton: document.getElementById("memory-lock-back-button"),
     memoryLockCard: document.getElementById("memory-lock-card"),
@@ -581,6 +633,8 @@
     elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.whoAmIBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.musicGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.countingGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.feelingsGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
@@ -588,6 +642,7 @@
     elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
     elements.weatherGamePromptCard.addEventListener("click", handleWeatherPromptClick);
     elements.whoAmIPromptCard.addEventListener("click", handleQuizPromptClick);
+    elements.feelingsGamePromptCard.addEventListener("click", handleFeelingsPromptClick);
     elements.memoryLockCard.addEventListener("click", handleMemoryLockClick);
     window.addEventListener("hashchange", renderCurrentRoute);
     bindParentExit(elements.sayFindParentExit, () => navigateTo(ROUTES.sayFindPacks));
@@ -597,6 +652,8 @@
     bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.whoAmIParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.musicGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.countingGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.feelingsGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
@@ -684,6 +741,14 @@
     }
     if (hash === ROUTES.musicGame) {
       startMusicGame();
+      return;
+    }
+    if (hash === ROUTES.countingGame) {
+      startCountingGame();
+      return;
+    }
+    if (hash === ROUTES.feelingsGame) {
+      startFeelingsGame();
       return;
     }
     if (hash === ROUTES.memoryLock) {
@@ -799,6 +864,14 @@
     }
     if (gameId === "music-time") {
       navigateTo(ROUTES.musicGame);
+      return;
+    }
+    if (gameId === "counting-game") {
+      navigateTo(ROUTES.countingGame);
+      return;
+    }
+    if (gameId === "feelings-find") {
+      navigateTo(ROUTES.feelingsGame);
       return;
     }
     if (gameId === "memory-lock") {
@@ -1528,6 +1601,175 @@
   function getMusicNoteById(noteId) {
     return MUSIC_NOTES.find((note) => note.id === noteId);
   }
+  function startCountingGame() {
+    state.countingScenarioIndex = 0;
+    state.countingScenarios = createCountingScenarios();
+    state.isAdvancing = false;
+    showScreen("counting");
+    renderCountingScenario();
+  }
+  function renderCountingScenario() {
+    const scenario = getCurrentCountingScenario();
+    state.isAdvancing = false;
+    elements.countingGameProgress.textContent = `${state.countingScenarioIndex + 1} / ${state.countingScenarios.length}`;
+    elements.countingGameHelperText.textContent = "Count the emojis. Tap the number.";
+    renderCountingItems(scenario);
+    renderCountingKeypad(scenario.count);
+  }
+  function renderCountingItems(scenario) {
+    const itemElements = scenario.items.map((emoji) => {
+      const item = document.createElement("span");
+      item.className = "counting-item";
+      item.textContent = emoji;
+      return item;
+    });
+    const grid = document.createElement("div");
+    grid.className = "counting-items-grid";
+    grid.append(...itemElements);
+    elements.countingItemsCard.replaceChildren(grid);
+  }
+  function renderCountingKeypad(answerCount) {
+    const keys = shuffleItems(NUMBER_ROUNDS.slice(0, 9)).map((numberItem) => {
+      const button = document.createElement("button");
+      button.className = "counting-key";
+      button.type = "button";
+      button.textContent = String(numberItem.number);
+      button.setAttribute("aria-label", numberItem.word);
+      button.addEventListener("click", () => handleCountingNumberClick(numberItem, answerCount, button));
+      return button;
+    });
+    elements.countingKeypad.replaceChildren(...keys);
+  }
+  async function handleCountingNumberClick(numberItem, answerCount, button) {
+    if (state.isAdvancing || numberItem.number !== answerCount) {
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(numberItem.word);
+    playHappySound();
+    window.setTimeout(advanceCountingScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceCountingScenario() {
+    const isGameFinished = state.countingScenarioIndex + 1 >= state.countingScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "counting-game");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.countingScenarioIndex += 1;
+    renderCountingScenario();
+  }
+  function getCurrentCountingScenario() {
+    if (state.countingScenarios.length === 0) {
+      state.countingScenarios = createCountingScenarios();
+    }
+    return state.countingScenarios[state.countingScenarioIndex];
+  }
+  function createCountingScenarios() {
+    const counts = shuffleItems(NUMBER_ROUNDS.slice(0, 9)).slice(0, COUNTING_SESSION_COUNT).map((item) => item.number);
+    return counts.map((count) => Object.freeze({
+      count,
+      items: Object.freeze(shuffleItems(COUNTING_ITEM_POOL).slice(0, count))
+    }));
+  }
+  function startFeelingsGame() {
+    state.feelingsScenarioIndex = 0;
+    state.feelingsScenarios = createFeelingsScenarios();
+    state.isAdvancing = false;
+    showScreen("feelings");
+    renderFeelingsScenario();
+  }
+  function renderFeelingsScenario() {
+    const scenario = getCurrentFeelingsScenario();
+    state.hasRevealedFeelingsChoices = false;
+    state.isAdvancing = false;
+    elements.feelingsGameProgress.textContent = `${state.feelingsScenarioIndex + 1} / ${state.feelingsScenarios.length}`;
+    elements.feelingsGamePromptCard.style.borderColor = "#f472b6";
+    elements.feelingsGamePromptCard.setAttribute("aria-label", `Hear ${scenario.word}`);
+    elements.feelingsGamePromptCard.replaceChildren(createFeelingCardContent(scenario));
+    elements.feelingsGameChoiceGrid.replaceChildren();
+    elements.feelingsGameHelperText.textContent = "Tap the big face to hear the feeling.";
+  }
+  function createFeelingCardContent(feeling) {
+    const fragment = document.createDocumentFragment();
+    const icon = document.createElement("span");
+    const label = document.createElement("span");
+    icon.className = "feeling-symbol";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = feeling.emoji;
+    label.className = "word-label";
+    label.textContent = feeling.word;
+    fragment.append(icon, label);
+    return fragment;
+  }
+  function handleFeelingsPromptClick() {
+    const scenario = getCurrentFeelingsScenario();
+    void speakText(scenario.word);
+    if (state.hasRevealedFeelingsChoices) {
+      return;
+    }
+    state.hasRevealedFeelingsChoices = true;
+    elements.feelingsGameHelperText.textContent = "Tap the faces. Every face speaks.";
+    renderFeelingChoices(scenario);
+  }
+  function renderFeelingChoices(scenario) {
+    const cards = createFeelingChoices(scenario).map((choice) => createFeelingChoiceCard(choice, scenario.word));
+    elements.feelingsGameChoiceGrid.replaceChildren(...cards);
+  }
+  function createFeelingChoices(scenario) {
+    const pool = isLevelTwo() ? FEELING_ITEMS : FEELING_ITEMS.slice(0, 6);
+    const others = pool.filter((item) => item.word !== scenario.word);
+    return shuffleItems([scenario, ...shuffleItems(others).slice(0, CHOICE_COUNT - 1)]);
+  }
+  function createFeelingChoiceCard(choice, answerWord) {
+    const button = document.createElement("button");
+    button.className = "card choice-card";
+    button.type = "button";
+    button.setAttribute("aria-label", choice.word);
+    button.innerHTML = `
+      <span class="feeling-symbol" aria-hidden="true">${choice.emoji}</span>
+      <span class="word-label">${choice.word}</span>
+    `;
+    button.addEventListener("click", () => handleFeelingChoiceClick(choice, answerWord, button));
+    return button;
+  }
+  async function handleFeelingChoiceClick(choice, answerWord, button) {
+    if (state.isAdvancing) {
+      return;
+    }
+    if (choice.word !== answerWord) {
+      await speakText(choice.word);
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(choice.word);
+    playHappySound();
+    window.setTimeout(advanceFeelingsScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceFeelingsScenario() {
+    const isGameFinished = state.feelingsScenarioIndex + 1 >= state.feelingsScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "feelings-find");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.feelingsScenarioIndex += 1;
+    renderFeelingsScenario();
+  }
+  function getCurrentFeelingsScenario() {
+    if (state.feelingsScenarios.length === 0) {
+      state.feelingsScenarios = createFeelingsScenarios();
+    }
+    return state.feelingsScenarios[state.feelingsScenarioIndex];
+  }
+  function createFeelingsScenarios() {
+    const pool = isLevelTwo() ? FEELING_ITEMS : FEELING_ITEMS.slice(0, 6);
+    return shuffleItems(pool).slice(0, FEELINGS_SESSION_COUNT);
+  }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
     state.memoryMode = memoryMode;
@@ -1873,7 +2115,7 @@
     oscillator.stop(options.startTime + duration);
   }
   function showScreen(screenName) {
-    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "music", "memory-lock"].includes(screenName);
+    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "music", "counting", "feelings", "memory-lock"].includes(screenName);
     updateAppViewportHeight();
     document.body.classList.toggle("is-game-active", isGameScreen);
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
@@ -1886,6 +2128,8 @@
     elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
     elements.whoAmIScreen.classList.toggle("screen-active", screenName === "who-am-i");
     elements.musicGameScreen.classList.toggle("screen-active", screenName === "music");
+    elements.countingGameScreen.classList.toggle("screen-active", screenName === "counting");
+    elements.feelingsGameScreen.classList.toggle("screen-active", screenName === "feelings");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
@@ -1960,6 +2204,8 @@
     getQuizSessionCount: () => QUIZ_SESSION_COUNT,
     getMusicTuneCount: () => MUSIC_TUNES.length,
     getMusicSessionCount: () => MUSIC_SESSION_COUNT,
+    getCountingSessionCount: () => COUNTING_SESSION_COUNT,
+    getFeelingsSessionCount: () => FEELINGS_SESSION_COUNT,
     getMemoryLockCount: () => MEMORY_LOCK_COUNT,
     getCurrentLevel: () => progress.level,
     getBuildInfo: () => APP_BUILD
