@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.7",
-    label: "2026-06-03 build 7",
-    cacheName: "little-english-games-v22"
+    version: "2026.06.03.9",
+    label: "2026-06-03 build 9",
+    cacheName: "little-english-games-v24"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -215,6 +215,24 @@
     Object.freeze({ answer: "toothbrush", emoji: "🪥", clueIcons: Object.freeze(["🦷", "🫧"]), clues: Object.freeze(["I clean teeth.", "Use me every day."]) })
   ]);
   const QUIZ_SESSION_COUNT = 5;
+  const MUSIC_NOTES = Object.freeze([
+    Object.freeze({ id: "do", label: "Do", frequency: 261.63 }),
+    Object.freeze({ id: "re", label: "Re", frequency: 293.66 }),
+    Object.freeze({ id: "mi", label: "Mi", frequency: 329.63 }),
+    Object.freeze({ id: "fa", label: "Fa", frequency: 349.23 }),
+    Object.freeze({ id: "sol", label: "Sol", frequency: 392.0 }),
+    Object.freeze({ id: "la", label: "La", frequency: 440.0 }),
+    Object.freeze({ id: "ti", label: "Ti", frequency: 493.88 })
+  ]);
+  const MUSIC_TUNES = Object.freeze([
+    Object.freeze({ title: "Twinkle Star", picture: "⭐", notes: Object.freeze(["do", "do", "sol", "sol", "la", "la", "sol"]) }),
+    Object.freeze({ title: "Rain Rain", picture: "🌧️", notes: Object.freeze(["sol", "mi", "sol", "mi", "sol", "mi", "do"]) }),
+    Object.freeze({ title: "Happy Tune", picture: "🎂", notes: Object.freeze(["do", "do", "re", "do", "fa", "mi"]) }),
+    Object.freeze({ title: "Little Lamb", picture: "🐑", notes: Object.freeze(["mi", "re", "do", "re", "mi", "mi", "mi"]) }),
+    Object.freeze({ title: "Row Boat", picture: "⛵", notes: Object.freeze(["do", "do", "do", "re", "mi", "mi", "re"]) }),
+    Object.freeze({ title: "Old Farm", picture: "🚜", notes: Object.freeze(["do", "do", "do", "sol", "la", "la", "sol"]) })
+  ]);
+  const MUSIC_SESSION_COUNT = 3;
   const MEMORY_LOCK_COUNT = 5;
   const MEMORY_KEYPAD_NUMBERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
   const MEMORY_MODES = Object.freeze({ visible: "visible", hidden: "hidden" });
@@ -347,6 +365,7 @@
     numberGame: "#/numbers",
     weatherGame: "#/weather",
     whoAmI: "#/who-am-i",
+    musicGame: "#/music",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
   });
@@ -400,6 +419,14 @@
       actionLabel: "Solve clues"
     }),
     Object.freeze({
+      id: "music-time",
+      title: "Music Time",
+      emoji: "🎵 🎹 ⭐",
+      color: "#ec4899",
+      description: "Follow the glowing Do Re Mi keys to play a tune.",
+      actionLabel: "Play music"
+    }),
+    Object.freeze({
       id: "memory-lock",
       title: "Memory Lock",
       emoji: "🔒 1 2",
@@ -425,6 +452,7 @@
     numberScenarios: [],
     weatherScenarios: [],
     quizScenarios: [],
+    musicTunes: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
@@ -440,6 +468,8 @@
     weatherScenarioIndex: 0,
     quizScenarioIndex: 0,
     quizClueIndex: 0,
+    musicTuneIndex: 0,
+    musicNoteIndex: 0,
     memoryLockIndex: 0,
     memoryMode: MEMORY_MODES.visible,
     memoryInput: [],
@@ -509,6 +539,13 @@
     whoAmIHelperText: document.getElementById("who-am-i-helper-text"),
     whoAmIProgress: document.getElementById("who-am-i-progress"),
     whoAmIParentExit: document.getElementById("who-am-i-parent-exit"),
+    musicGameScreen: document.getElementById("music-game-screen"),
+    musicGameBackButton: document.getElementById("music-game-back-button"),
+    musicPicture: document.getElementById("music-picture"),
+    musicHelperText: document.getElementById("music-helper-text"),
+    musicKeyboard: document.getElementById("music-keyboard"),
+    musicGameProgress: document.getElementById("music-game-progress"),
+    musicGameParentExit: document.getElementById("music-game-parent-exit"),
     memoryLockScreen: document.getElementById("memory-lock-screen"),
     memoryLockBackButton: document.getElementById("memory-lock-back-button"),
     memoryLockCard: document.getElementById("memory-lock-card"),
@@ -543,6 +580,7 @@
     elements.numberGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.whoAmIBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.musicGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
@@ -558,6 +596,7 @@
     bindParentExit(elements.numberGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.whoAmIParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.musicGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
@@ -641,6 +680,10 @@
     }
     if (hash === ROUTES.whoAmI) {
       startQuizGame();
+      return;
+    }
+    if (hash === ROUTES.musicGame) {
+      startMusicGame();
       return;
     }
     if (hash === ROUTES.memoryLock) {
@@ -752,6 +795,10 @@
     }
     if (gameId === "who-am-i") {
       navigateTo(ROUTES.whoAmI);
+      return;
+    }
+    if (gameId === "music-time") {
+      navigateTo(ROUTES.musicGame);
       return;
     }
     if (gameId === "memory-lock") {
@@ -1393,6 +1440,94 @@
   function getQuizChoicePool() {
     return isLevelTwo() ? QUIZ_ITEMS : QUIZ_ITEMS.slice(0, 20);
   }
+  function startMusicGame() {
+    state.musicTuneIndex = 0;
+    state.musicNoteIndex = 0;
+    state.musicTunes = createMusicTunes();
+    state.isAdvancing = false;
+    showScreen("music");
+    renderMusicTune();
+  }
+  function renderMusicTune() {
+    const tune = getCurrentMusicTune();
+    state.musicNoteIndex = 0;
+    state.isAdvancing = false;
+    elements.musicPicture.textContent = tune.picture;
+    elements.musicGameProgress.textContent = `${state.musicTuneIndex + 1} / ${state.musicTunes.length}`;
+    elements.musicHelperText.textContent = "Press the glowing key.";
+    renderMusicKeyboard();
+  }
+  function renderMusicKeyboard() {
+    const tune = getCurrentMusicTune();
+    const nextNoteId = tune.notes[state.musicNoteIndex];
+    const keys = MUSIC_NOTES.map((note) => {
+      const button = document.createElement("button");
+      const isNext = note.id === nextNoteId;
+      button.className = `music-key ${isNext ? "is-next" : ""}`;
+      button.type = "button";
+      button.setAttribute("aria-label", note.label);
+      button.innerHTML = `
+        <span class="music-key-note">${note.label}</span>
+        <span class="music-key-name">${note.id}</span>
+      `;
+      button.addEventListener("click", () => handleMusicKeyClick(note));
+      return button;
+    });
+    elements.musicKeyboard.replaceChildren(...keys);
+  }
+  function handleMusicKeyClick(note) {
+    if (state.isAdvancing) {
+      return;
+    }
+    const tune = getCurrentMusicTune();
+    const nextNoteId = tune.notes[state.musicNoteIndex];
+    if (note.id !== nextNoteId) {
+      return;
+    }
+    playMusicNote(note);
+    state.musicNoteIndex += 1;
+    elements.musicHelperText.textContent = `${note.label}!`;
+    if (state.musicNoteIndex >= tune.notes.length) {
+      finishMusicTune();
+      return;
+    }
+    renderMusicKeyboard();
+  }
+  function playMusicNote(note) {
+    const audioContext = getAudioContext();
+    if (!audioContext) {
+      return;
+    }
+    playTone({ audioContext, frequency: note.frequency, startTime: audioContext.currentTime, duration: 0.32, gainValue: 0.18 });
+  }
+  function finishMusicTune() {
+    state.isAdvancing = true;
+    playHappySound();
+    window.setTimeout(advanceMusicTune, NEXT_SCENARIO_DELAY_MS + 250);
+  }
+  function advanceMusicTune() {
+    const isGameFinished = state.musicTuneIndex + 1 >= state.musicTunes.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "music-time");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.musicTuneIndex += 1;
+    renderMusicTune();
+  }
+  function getCurrentMusicTune() {
+    if (state.musicTunes.length === 0) {
+      state.musicTunes = createMusicTunes();
+    }
+    return state.musicTunes[state.musicTuneIndex];
+  }
+  function createMusicTunes() {
+    return shuffleItems(MUSIC_TUNES).slice(0, MUSIC_SESSION_COUNT);
+  }
+  function getMusicNoteById(noteId) {
+    return MUSIC_NOTES.find((note) => note.id === noteId);
+  }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
     state.memoryMode = memoryMode;
@@ -1703,34 +1838,42 @@
     });
   }
   function playHappySound() {
-    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextConstructor) {
+    const audioContext = getAudioContext();
+    if (!audioContext) {
       return;
     }
-    if (!state.audioContext) {
-      state.audioContext = new AudioContextConstructor();
-    }
-    const audioContext = state.audioContext;
     const startTime = audioContext.currentTime;
     [523.25, 659.25, 783.99].forEach((frequency, index) => {
       playTone({ audioContext, frequency, startTime: startTime + index * 0.12 });
     });
   }
+  function getAudioContext() {
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextConstructor) {
+      return null;
+    }
+    if (!state.audioContext) {
+      state.audioContext = new AudioContextConstructor();
+    }
+    return state.audioContext;
+  }
   function playTone(options) {
+    const duration = options.duration || 0.2;
+    const gainValue = options.gainValue || 0.22;
     const oscillator = options.audioContext.createOscillator();
     const gain = options.audioContext.createGain();
     oscillator.type = "sine";
     oscillator.frequency.value = options.frequency;
     gain.gain.setValueAtTime(0.0001, options.startTime);
-    gain.gain.exponentialRampToValueAtTime(0.22, options.startTime + 0.025);
-    gain.gain.exponentialRampToValueAtTime(0.0001, options.startTime + 0.18);
+    gain.gain.exponentialRampToValueAtTime(gainValue, options.startTime + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.0001, options.startTime + duration - 0.02);
     oscillator.connect(gain);
     gain.connect(options.audioContext.destination);
     oscillator.start(options.startTime);
-    oscillator.stop(options.startTime + 0.2);
+    oscillator.stop(options.startTime + duration);
   }
   function showScreen(screenName) {
-    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "memory-lock"].includes(screenName);
+    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "music", "memory-lock"].includes(screenName);
     updateAppViewportHeight();
     document.body.classList.toggle("is-game-active", isGameScreen);
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
@@ -1742,6 +1885,7 @@
     elements.numberGameScreen.classList.toggle("screen-active", screenName === "number-game");
     elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
     elements.whoAmIScreen.classList.toggle("screen-active", screenName === "who-am-i");
+    elements.musicGameScreen.classList.toggle("screen-active", screenName === "music");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
@@ -1814,6 +1958,8 @@
     getWeatherScenarioCount: () => WEATHER_SCENARIOS_PER_GAME,
     getQuizItemCount: () => QUIZ_ITEMS.length,
     getQuizSessionCount: () => QUIZ_SESSION_COUNT,
+    getMusicTuneCount: () => MUSIC_TUNES.length,
+    getMusicSessionCount: () => MUSIC_SESSION_COUNT,
     getMemoryLockCount: () => MEMORY_LOCK_COUNT,
     getCurrentLevel: () => progress.level,
     getBuildInfo: () => APP_BUILD
