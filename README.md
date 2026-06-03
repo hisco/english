@@ -11,6 +11,7 @@ A dependency-free static web catalog of gentle English listening games for young
 - **What Is the Weather?**: hear weather words, explore weather icons, and find the matching weather.
 - **Who Am I?**: hear short spoken clues, reveal clue icons, and choose the matching emoji answer.
 - **Music Time**: follow glowing Do Re Mi keys to play simple children-song tunes.
+- **Math Reveal**: reveal a simple math problem one box at a time and hear each part.
 - **Memory Lock**: copy four visible numbers to open a lock.
 - **Memory Lock Plus**: peek at four numbers, remember the hidden one, and type the code to open the lock.
 

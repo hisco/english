@@ -467,6 +467,52 @@ h1 {
   background: #fce7f3;
 }
 
+
+.math-stage {
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.5rem);
+  justify-items: center;
+  margin: auto 0;
+}
+
+.math-token-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(0.45rem, 1.8vw, 1rem);
+  width: min(52rem, 100%);
+}
+
+.math-token {
+  align-items: center;
+  background: #ffffff;
+  border: 0.3rem solid var(--card-border);
+  border-radius: 1.4rem;
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  cursor: pointer;
+  display: grid;
+  font-size: clamp(2.4rem, 9vw, 5rem);
+  font-weight: 900;
+  min-height: clamp(6rem, 20vh, 11rem);
+  place-items: center;
+  touch-action: manipulation;
+}
+
+.math-token.is-next {
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 0.35rem rgba(20, 184, 166, 0.22), var(--shadow);
+  transform: translateY(-0.25rem);
+}
+
+.math-token.is-hidden::before {
+  content: "?";
+  color: var(--primary-dark);
+}
+
+.math-token.is-revealed {
+  background: #ccfbf1;
+}
+
 .memory-stage {
   flex: 0 1 auto;
   min-height: 0;
@@ -891,5 +937,10 @@ h1 {
   .music-key {
     min-height: clamp(5rem, 18vh, 8rem);
     padding: 0.45rem 0.2rem;
+  }
+
+  .math-token {
+    font-size: clamp(1.8rem, 7vw, 3.2rem);
+    min-height: clamp(4rem, 14vh, 6.5rem);
   }
 }
