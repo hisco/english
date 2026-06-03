@@ -9,6 +9,7 @@ A dependency-free static web catalog of gentle English listening games for young
 - **Who Is Doing It?**: hear noun and verb phrases, explore action cards, and match who is doing the action.
 - **Number Find**: hear numbers, explore shuffled choices, and find numbers from 1 to 10 in changing order.
 - **What Is the Weather?**: hear weather words, explore weather icons, and find the matching weather.
+- **Who Am I?**: hear short spoken clues, reveal clue icons, and choose the matching emoji answer.
 - **Memory Lock**: copy four visible numbers to open a lock.
 - **Memory Lock Plus**: peek at four numbers, remember the hidden one, and type the code to open the lock.
 

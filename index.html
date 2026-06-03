@@ -154,6 +154,27 @@
         </div>
         <div id="weather-game-choice-grid" class="choice-grid" aria-label="Weather choices"></div>
       </section>
+      <section id="who-am-i-screen" class="screen game-screen who-am-i-screen" aria-labelledby="who-am-i-title">
+        <div id="who-am-i-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Who Am I?</p>
+            <h1 id="who-am-i-title">Guess the answer</h1>
+          </div>
+          <div class="header-actions">
+            <button id="who-am-i-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="who-am-i-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="prompt-area">
+          <button id="who-am-i-prompt-card" class="card who-am-i-prompt-card" type="button" aria-label="Hear the clue">
+            <span class="mystery-symbol" aria-hidden="true">❓</span>
+            <span id="who-am-i-clue-icons" class="clue-icons" aria-hidden="true"></span>
+          </button>
+          <p id="who-am-i-helper-text" class="helper-text">Tap the mystery card to hear a clue.</p>
+        </div>
+        <div id="who-am-i-choice-grid" class="choice-grid" aria-label="Quiz answer choices"></div>
+      </section>
       <section id="memory-lock-screen" class="screen game-screen memory-lock-screen" aria-labelledby="memory-lock-title">
         <div id="memory-lock-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
         <header class="game-header">

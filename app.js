@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.6",
-    label: "2026-06-03 build 6",
-    cacheName: "little-english-games-v21"
+    version: "2026.06.03.7",
+    label: "2026-06-03 build 7",
+    cacheName: "little-english-games-v22"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -172,6 +172,49 @@
     Object.freeze({ word: "hot", emoji: "🥵" }),
     Object.freeze({ word: "cold", emoji: "🥶" })
   ]);
+  const QUIZ_ITEMS = Object.freeze([
+    Object.freeze({ answer: "cow", emoji: "🐮", clueIcons: Object.freeze(["🌿", "🥛"]), clues: Object.freeze(["I eat grass.", "I make milk."]) }),
+    Object.freeze({ answer: "chicken", emoji: "🐔", clueIcons: Object.freeze(["🥚", "🐣"]), clues: Object.freeze(["I lay eggs.", "I say cluck."]) }),
+    Object.freeze({ answer: "dog", emoji: "🐶", clueIcons: Object.freeze(["🦴", "🐾"]), clues: Object.freeze(["I wag my tail.", "I bark."]) }),
+    Object.freeze({ answer: "cat", emoji: "🐱", clueIcons: Object.freeze(["🐟", "😺"]), clues: Object.freeze(["I say meow.", "I like fish."]) }),
+    Object.freeze({ answer: "fish", emoji: "🐟", clueIcons: Object.freeze(["🌊", "🏊"]), clues: Object.freeze(["I swim.", "I live in water."]) }),
+    Object.freeze({ answer: "bee", emoji: "🐝", clueIcons: Object.freeze(["🍯", "🌼"]), clues: Object.freeze(["I make honey.", "I fly."]) }),
+    Object.freeze({ answer: "horse", emoji: "🐴", clueIcons: Object.freeze(["🏇", "🌾"]), clues: Object.freeze(["I run fast.", "People ride me."]) }),
+    Object.freeze({ answer: "pig", emoji: "🐷", clueIcons: Object.freeze(["🟤", "🐽"]), clues: Object.freeze(["I love mud.", "I say oink."]) }),
+    Object.freeze({ answer: "sheep", emoji: "🐑", clueIcons: Object.freeze(["🧶", "🌿"]), clues: Object.freeze(["I give wool.", "I eat grass."]) }),
+    Object.freeze({ answer: "duck", emoji: "🦆", clueIcons: Object.freeze(["💧", "🪽"]), clues: Object.freeze(["I swim.", "I say quack."]) }),
+    Object.freeze({ answer: "lion", emoji: "🦁", clueIcons: Object.freeze(["👑", "📣"]), clues: Object.freeze(["I am big.", "I roar."]) }),
+    Object.freeze({ answer: "monkey", emoji: "🐵", clueIcons: Object.freeze(["🍌", "🌳"]), clues: Object.freeze(["I like bananas.", "I climb trees."]) }),
+    Object.freeze({ answer: "elephant", emoji: "🐘", clueIcons: Object.freeze(["👃", "💧"]), clues: Object.freeze(["I have a trunk.", "I am very big."]) }),
+    Object.freeze({ answer: "turtle", emoji: "🐢", clueIcons: Object.freeze(["🛡️", "🐌"]), clues: Object.freeze(["I have a shell.", "I move slowly."]) }),
+    Object.freeze({ answer: "rabbit", emoji: "🐰", clueIcons: Object.freeze(["🥕", "⬆️"]), clues: Object.freeze(["I like carrots.", "I hop."]) }),
+    Object.freeze({ answer: "bird", emoji: "🐦", clueIcons: Object.freeze(["🎵", "🪽"]), clues: Object.freeze(["I sing.", "I fly."]) }),
+    Object.freeze({ answer: "frog", emoji: "🐸", clueIcons: Object.freeze(["⬆️", "💧"]), clues: Object.freeze(["I jump.", "I live near water."]) }),
+    Object.freeze({ answer: "butterfly", emoji: "🦋", clueIcons: Object.freeze(["🌼", "🪽"]), clues: Object.freeze(["I have wings.", "I visit flowers."]) }),
+    Object.freeze({ answer: "snail", emoji: "🐌", clueIcons: Object.freeze(["🐢", "🌀"]), clues: Object.freeze(["I move slowly.", "I carry my home."]) }),
+    Object.freeze({ answer: "spider", emoji: "🕷️", clueIcons: Object.freeze(["🕸️", "8️⃣"]), clues: Object.freeze(["I make webs.", "I have eight legs."]) }),
+    Object.freeze({ answer: "apple", emoji: "🍎", clueIcons: Object.freeze(["🌳", "🍽️"]), clues: Object.freeze(["I grow on trees.", "You can eat me."]) }),
+    Object.freeze({ answer: "banana", emoji: "🍌", clueIcons: Object.freeze(["🐵", "💛"]), clues: Object.freeze(["Monkeys like me.", "I am yellow."]) }),
+    Object.freeze({ answer: "carrot", emoji: "🥕", clueIcons: Object.freeze(["🐰", "🟠"]), clues: Object.freeze(["Rabbits like me.", "I am orange."]) }),
+    Object.freeze({ answer: "cookie", emoji: "🍪", clueIcons: Object.freeze(["🍫", "😋"]), clues: Object.freeze(["I am sweet.", "I am a treat."]) }),
+    Object.freeze({ answer: "pizza", emoji: "🍕", clueIcons: Object.freeze(["🧀", "🍅"]), clues: Object.freeze(["I have cheese.", "I am a slice."]) }),
+    Object.freeze({ answer: "sun", emoji: "☀️", clueIcons: Object.freeze(["💡", "🥵"]), clues: Object.freeze(["I am bright.", "I make it warm."]) }),
+    Object.freeze({ answer: "moon", emoji: "🌙", clueIcons: Object.freeze(["🌃", "✨"]), clues: Object.freeze(["I shine at night.", "I am in the sky."]) }),
+    Object.freeze({ answer: "rain", emoji: "🌧️", clueIcons: Object.freeze(["☁️", "💧"]), clues: Object.freeze(["I fall from clouds.", "I make things wet."]) }),
+    Object.freeze({ answer: "snow", emoji: "❄️", clueIcons: Object.freeze(["🥶", "☁️"]), clues: Object.freeze(["I am cold.", "I fall from clouds."]) }),
+    Object.freeze({ answer: "rainbow", emoji: "🌈", clueIcons: Object.freeze(["🌧️", "☀️"]), clues: Object.freeze(["I have colors.", "I come after rain."]) }),
+    Object.freeze({ answer: "car", emoji: "🚗", clueIcons: Object.freeze(["🛞", "🛣️"]), clues: Object.freeze(["I have wheels.", "I drive on roads."]) }),
+    Object.freeze({ answer: "train", emoji: "🚂", clueIcons: Object.freeze(["🛤️", "🚉"]), clues: Object.freeze(["I ride on tracks.", "I am very long."]) }),
+    Object.freeze({ answer: "airplane", emoji: "✈️", clueIcons: Object.freeze(["☁️", "🪽"]), clues: Object.freeze(["I fly high.", "I carry people."]) }),
+    Object.freeze({ answer: "boat", emoji: "⛵", clueIcons: Object.freeze(["🌊", "⚓"]), clues: Object.freeze(["I go on water.", "I can sail."]) }),
+    Object.freeze({ answer: "rocket", emoji: "🚀", clueIcons: Object.freeze(["🌌", "🔥"]), clues: Object.freeze(["I go to space.", "I blast off."]) }),
+    Object.freeze({ answer: "book", emoji: "📘", clueIcons: Object.freeze(["📖", "👀"]), clues: Object.freeze(["I have pages.", "You look at me."]) }),
+    Object.freeze({ answer: "ball", emoji: "⚽", clueIcons: Object.freeze(["🦶", "⬆️"]), clues: Object.freeze(["You kick me.", "I can bounce."]) }),
+    Object.freeze({ answer: "teddy bear", emoji: "🧸", clueIcons: Object.freeze(["🤗", "🛏️"]), clues: Object.freeze(["You hug me.", "I sleep with you."]) }),
+    Object.freeze({ answer: "bed", emoji: "🛏️", clueIcons: Object.freeze(["😴", "🌙"]), clues: Object.freeze(["You sleep on me.", "I am soft."]) }),
+    Object.freeze({ answer: "toothbrush", emoji: "🪥", clueIcons: Object.freeze(["🦷", "🫧"]), clues: Object.freeze(["I clean teeth.", "Use me every day."]) })
+  ]);
+  const QUIZ_SESSION_COUNT = 5;
   const MEMORY_LOCK_COUNT = 5;
   const MEMORY_KEYPAD_NUMBERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
   const MEMORY_MODES = Object.freeze({ visible: "visible", hidden: "hidden" });
@@ -303,6 +346,7 @@
     actionGame: "#/who-is-doing-it",
     numberGame: "#/numbers",
     weatherGame: "#/weather",
+    whoAmI: "#/who-am-i",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
   });
@@ -348,6 +392,14 @@
       actionLabel: "Find weather"
     }),
     Object.freeze({
+      id: "who-am-i",
+      title: "Who Am I?",
+      emoji: "❓ 🐮 🍌",
+      color: "#14b8a6",
+      description: "Hear short clues, see clue icons, and find the answer.",
+      actionLabel: "Solve clues"
+    }),
+    Object.freeze({
       id: "memory-lock",
       title: "Memory Lock",
       emoji: "🔒 1 2",
@@ -372,6 +424,7 @@
     actionScenarios: [],
     numberScenarios: [],
     weatherScenarios: [],
+    quizScenarios: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
@@ -379,11 +432,14 @@
     hasRevealedActionChoices: false,
     hasRevealedNumberChoices: false,
     hasRevealedWeatherChoices: false,
+    hasRevealedQuizChoices: false,
     isAdvancing: false,
     bagScenarioIndex: 0,
     actionScenarioIndex: 0,
     numberScenarioIndex: 0,
     weatherScenarioIndex: 0,
+    quizScenarioIndex: 0,
+    quizClueIndex: 0,
     memoryLockIndex: 0,
     memoryMode: MEMORY_MODES.visible,
     memoryInput: [],
@@ -445,6 +501,14 @@
     weatherGameHelperText: document.getElementById("weather-game-helper-text"),
     weatherGameProgress: document.getElementById("weather-game-progress"),
     weatherGameParentExit: document.getElementById("weather-game-parent-exit"),
+    whoAmIScreen: document.getElementById("who-am-i-screen"),
+    whoAmIBackButton: document.getElementById("who-am-i-back-button"),
+    whoAmIPromptCard: document.getElementById("who-am-i-prompt-card"),
+    whoAmIClueIcons: document.getElementById("who-am-i-clue-icons"),
+    whoAmIChoiceGrid: document.getElementById("who-am-i-choice-grid"),
+    whoAmIHelperText: document.getElementById("who-am-i-helper-text"),
+    whoAmIProgress: document.getElementById("who-am-i-progress"),
+    whoAmIParentExit: document.getElementById("who-am-i-parent-exit"),
     memoryLockScreen: document.getElementById("memory-lock-screen"),
     memoryLockBackButton: document.getElementById("memory-lock-back-button"),
     memoryLockCard: document.getElementById("memory-lock-card"),
@@ -478,12 +542,14 @@
     elements.actionGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.numberGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.whoAmIBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
     elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
     elements.weatherGamePromptCard.addEventListener("click", handleWeatherPromptClick);
+    elements.whoAmIPromptCard.addEventListener("click", handleQuizPromptClick);
     elements.memoryLockCard.addEventListener("click", handleMemoryLockClick);
     window.addEventListener("hashchange", renderCurrentRoute);
     bindParentExit(elements.sayFindParentExit, () => navigateTo(ROUTES.sayFindPacks));
@@ -491,6 +557,7 @@
     bindParentExit(elements.actionGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.numberGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.whoAmIParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
@@ -570,6 +637,10 @@
     }
     if (hash === ROUTES.weatherGame) {
       startWeatherGame();
+      return;
+    }
+    if (hash === ROUTES.whoAmI) {
+      startQuizGame();
       return;
     }
     if (hash === ROUTES.memoryLock) {
@@ -677,6 +748,10 @@
     }
     if (gameId === "weather-find") {
       navigateTo(ROUTES.weatherGame);
+      return;
+    }
+    if (gameId === "who-am-i") {
+      navigateTo(ROUTES.whoAmI);
       return;
     }
     if (gameId === "memory-lock") {
@@ -1224,6 +1299,100 @@
   function getWeatherChoicePool() {
     return isLevelTwo() ? WEATHER_BASE_ROUNDS.concat(WEATHER_LEVEL_TWO_ROUNDS) : WEATHER_BASE_ROUNDS;
   }
+  function startQuizGame() {
+    state.quizScenarioIndex = 0;
+    state.quizClueIndex = 0;
+    state.quizScenarios = createQuizScenarios();
+    state.isAdvancing = false;
+    showScreen("who-am-i");
+    renderQuizScenario();
+  }
+  function renderQuizScenario() {
+    const scenario = getCurrentQuizScenario();
+    state.quizClueIndex = 0;
+    state.hasRevealedQuizChoices = false;
+    state.isAdvancing = false;
+    elements.whoAmIProgress.textContent = `${state.quizScenarioIndex + 1} / ${state.quizScenarios.length}`;
+    elements.whoAmIPromptCard.style.borderColor = "#14b8a6";
+    elements.whoAmIPromptCard.setAttribute("aria-label", "Hear a clue");
+    elements.whoAmIClueIcons.textContent = "";
+    elements.whoAmIChoiceGrid.replaceChildren();
+    elements.whoAmIHelperText.textContent = "Tap the mystery card to hear a clue.";
+    renderQuizChoices(scenario);
+  }
+  function handleQuizPromptClick() {
+    const scenario = getCurrentQuizScenario();
+    const clueIndex = Math.min(state.quizClueIndex, scenario.clues.length - 1);
+    void speakText(scenario.clues[clueIndex]);
+    state.quizClueIndex = Math.min(state.quizClueIndex + 1, scenario.clues.length);
+    renderQuizClueIcons(scenario);
+    elements.whoAmIHelperText.textContent = state.quizClueIndex >= scenario.clues.length
+      ? "Tap an answer card."
+      : "Tap again for another clue.";
+    state.hasRevealedQuizChoices = true;
+  }
+  function renderQuizClueIcons(scenario) {
+    const visibleIcons = scenario.clueIcons.slice(0, state.quizClueIndex);
+    elements.whoAmIClueIcons.textContent = visibleIcons.join(" ");
+  }
+  function renderQuizChoices(scenario) {
+    const choiceCards = createQuizChoices(scenario).map((choice) => createQuizChoiceCard(choice, scenario.answer));
+    elements.whoAmIChoiceGrid.replaceChildren(...choiceCards);
+  }
+  function createQuizChoices(scenario) {
+    const pool = getQuizChoicePool();
+    const otherItems = pool.filter((item) => item.answer !== scenario.answer);
+    return shuffleItems([scenario, ...shuffleItems(otherItems).slice(0, CHOICE_COUNT - 1)]);
+  }
+  function createQuizChoiceCard(choice, answer) {
+    const button = document.createElement("button");
+    button.className = "card choice-card";
+    button.type = "button";
+    button.setAttribute("aria-label", choice.answer);
+    button.innerHTML = `
+      <span class="quiz-answer-symbol" aria-hidden="true">${choice.emoji}</span>
+      <span class="word-label">${choice.answer}</span>
+    `;
+    button.addEventListener("click", () => handleQuizChoiceClick(choice, answer, button));
+    return button;
+  }
+  async function handleQuizChoiceClick(choice, answer, button) {
+    if (state.isAdvancing) {
+      return;
+    }
+    if (choice.answer !== answer) {
+      await speakText(choice.answer);
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(choice.answer);
+    playHappySound();
+    window.setTimeout(advanceQuizScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceQuizScenario() {
+    const isGameFinished = state.quizScenarioIndex + 1 >= state.quizScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "who-am-i");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.quizScenarioIndex += 1;
+    renderQuizScenario();
+  }
+  function getCurrentQuizScenario() {
+    if (state.quizScenarios.length === 0) {
+      state.quizScenarios = createQuizScenarios();
+    }
+    return state.quizScenarios[state.quizScenarioIndex];
+  }
+  function createQuizScenarios() {
+    return shuffleItems(getQuizChoicePool()).slice(0, QUIZ_SESSION_COUNT);
+  }
+  function getQuizChoicePool() {
+    return isLevelTwo() ? QUIZ_ITEMS : QUIZ_ITEMS.slice(0, 20);
+  }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
     state.memoryMode = memoryMode;
@@ -1561,7 +1730,7 @@
     oscillator.stop(options.startTime + 0.2);
   }
   function showScreen(screenName) {
-    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "memory-lock"].includes(screenName);
+    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "memory-lock"].includes(screenName);
     updateAppViewportHeight();
     document.body.classList.toggle("is-game-active", isGameScreen);
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
@@ -1572,6 +1741,7 @@
     elements.actionGameScreen.classList.toggle("screen-active", screenName === "action-game");
     elements.numberGameScreen.classList.toggle("screen-active", screenName === "number-game");
     elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
+    elements.whoAmIScreen.classList.toggle("screen-active", screenName === "who-am-i");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
@@ -1642,6 +1812,8 @@
     getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME,
     getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME,
     getWeatherScenarioCount: () => WEATHER_SCENARIOS_PER_GAME,
+    getQuizItemCount: () => QUIZ_ITEMS.length,
+    getQuizSessionCount: () => QUIZ_SESSION_COUNT,
     getMemoryLockCount: () => MEMORY_LOCK_COUNT,
     getCurrentLevel: () => progress.level,
     getBuildInfo: () => APP_BUILD
