@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.12",
-    label: "2026-06-03 build 12",
-    cacheName: "little-english-games-v27"
+    version: "2026.06.03.13",
+    label: "2026-06-03 build 13",
+    cacheName: "little-english-games-v28"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -777,6 +777,9 @@
       navigateTo(ROUTES.catalog, { replace: true });
       return;
     }
+    if (handleExternalRoute(hash)) {
+      return;
+    }
     if (hash === ROUTES.catalog || hash === "#/") {
       renderCatalog();
       return;
@@ -878,7 +881,16 @@
   function renderCatalog() {
     updateLevelBadge();
     elements.gameCatalog.replaceChildren(...GAMES.map(createCatalogCard));
+    renderCatalogExtensions();
     showScreen("catalog");
+  }
+  function renderCatalogExtensions() {
+    (window.LittleEnglishGamesCatalogAugmenters || []).forEach((augmentCatalog) => {
+      augmentCatalog(elements.gameCatalog);
+    });
+  }
+  function handleExternalRoute(hash) {
+    return (window.LittleEnglishGamesRouteHandlers || []).some((handleRoute) => handleRoute(hash));
   }
   function renderSettings() {
     elements.levelOneButton.classList.toggle("is-selected", progress.level === LEVELS.learn);

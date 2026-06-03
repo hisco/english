@@ -1,8 +1,10 @@
-const CACHE_NAME = "little-english-games-v27";
+const CACHE_NAME = "little-english-games-v28";
 const OFFLINE_FILES = Object.freeze([
   "./",
   "./index.html",
   "./styles.css",
+  "./free-play-piano-game.css",
+  "./free-play-piano-game.js",
   "./app.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
