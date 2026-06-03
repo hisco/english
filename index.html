@@ -175,6 +175,29 @@
         </div>
         <div id="who-am-i-choice-grid" class="choice-grid" aria-label="Quiz answer choices"></div>
       </section>
+      <section id="listen-lock-screen" class="screen game-screen listen-lock-screen" aria-labelledby="listen-lock-title">
+        <div id="listen-lock-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Listen Lock</p>
+            <h1 id="listen-lock-title">Hear the code</h1>
+          </div>
+          <div class="header-actions">
+            <button id="listen-lock-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="listen-lock-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="memory-stage">
+          <button id="listen-lock-card" class="card memory-lock-card" type="button" aria-label="Listen lock">
+            <span id="listen-lock-icon" class="memory-lock-icon" aria-hidden="true">🔒</span>
+            <span id="listen-lock-status" class="memory-lock-status">Locked</span>
+          </button>
+          <div id="listen-code-display" class="memory-code-display listen-code-display" aria-label="Tap boxes to hear code numbers"></div>
+          <div id="listen-input-display" class="memory-input-display" aria-label="Typed numbers"></div>
+          <p id="listen-lock-helper-text" class="helper-text">Tap each blank box to hear its number.</p>
+        </div>
+        <div id="listen-keypad" class="memory-keypad" aria-label="Number keypad"></div>
+      </section>
       <section id="memory-lock-screen" class="screen game-screen memory-lock-screen" aria-labelledby="memory-lock-title">
         <div id="memory-lock-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
         <header class="game-header">

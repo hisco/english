@@ -637,6 +637,27 @@ h1 {
   place-items: center;
 }
 
+
+.listen-code-box {
+  cursor: pointer;
+  color: var(--primary-dark);
+  background: #ede9fe;
+}
+
+.listen-code-box::before {
+  content: "?";
+}
+
+.listen-code-box.is-heard {
+  border-color: #14b8a6;
+  background: #ccfbf1;
+}
+
+.listen-code-box.is-heard::before {
+  content: "🔊";
+  font-size: clamp(1.7rem, 6vw, 3rem);
+}
+
 .memory-digit.is-hidden {
   color: var(--primary);
   background: #ede9fe;

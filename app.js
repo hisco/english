@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.7",
-    label: "2026-06-03 build 7",
-    cacheName: "little-english-games-v22"
+    version: "2026.06.03.8",
+    label: "2026-06-03 build 8",
+    cacheName: "little-english-games-v23"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -347,6 +347,7 @@
     numberGame: "#/numbers",
     weatherGame: "#/weather",
     whoAmI: "#/who-am-i",
+    listenLock: "#/listen-lock",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
   });
@@ -400,6 +401,14 @@
       actionLabel: "Solve clues"
     }),
     Object.freeze({
+      id: "listen-lock",
+      title: "Listen Lock",
+      emoji: "🔒 🔊 5",
+      color: "#8b5cf6",
+      description: "Tap blank boxes to hear numbers, then type the code.",
+      actionLabel: "Hear code"
+    }),
+    Object.freeze({
       id: "memory-lock",
       title: "Memory Lock",
       emoji: "🔒 1 2",
@@ -425,6 +434,9 @@
     numberScenarios: [],
     weatherScenarios: [],
     quizScenarios: [],
+    listenLockCodes: [],
+    listenInput: [],
+    heardListenIndexes: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
@@ -440,6 +452,7 @@
     weatherScenarioIndex: 0,
     quizScenarioIndex: 0,
     quizClueIndex: 0,
+    listenLockIndex: 0,
     memoryLockIndex: 0,
     memoryMode: MEMORY_MODES.visible,
     memoryInput: [],
@@ -509,6 +522,17 @@
     whoAmIHelperText: document.getElementById("who-am-i-helper-text"),
     whoAmIProgress: document.getElementById("who-am-i-progress"),
     whoAmIParentExit: document.getElementById("who-am-i-parent-exit"),
+    listenLockScreen: document.getElementById("listen-lock-screen"),
+    listenLockBackButton: document.getElementById("listen-lock-back-button"),
+    listenLockCard: document.getElementById("listen-lock-card"),
+    listenLockIcon: document.getElementById("listen-lock-icon"),
+    listenLockStatus: document.getElementById("listen-lock-status"),
+    listenLockProgress: document.getElementById("listen-lock-progress"),
+    listenCodeDisplay: document.getElementById("listen-code-display"),
+    listenInputDisplay: document.getElementById("listen-input-display"),
+    listenLockHelperText: document.getElementById("listen-lock-helper-text"),
+    listenKeypad: document.getElementById("listen-keypad"),
+    listenLockParentExit: document.getElementById("listen-lock-parent-exit"),
     memoryLockScreen: document.getElementById("memory-lock-screen"),
     memoryLockBackButton: document.getElementById("memory-lock-back-button"),
     memoryLockCard: document.getElementById("memory-lock-card"),
@@ -543,6 +567,7 @@
     elements.numberGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.whoAmIBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.listenLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
@@ -558,6 +583,7 @@
     bindParentExit(elements.numberGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.whoAmIParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.listenLockParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
@@ -641,6 +667,10 @@
     }
     if (hash === ROUTES.whoAmI) {
       startQuizGame();
+      return;
+    }
+    if (hash === ROUTES.listenLock) {
+      startListenLockGame();
       return;
     }
     if (hash === ROUTES.memoryLock) {
@@ -752,6 +782,10 @@
     }
     if (gameId === "who-am-i") {
       navigateTo(ROUTES.whoAmI);
+      return;
+    }
+    if (gameId === "listen-lock") {
+      navigateTo(ROUTES.listenLock);
       return;
     }
     if (gameId === "memory-lock") {
@@ -1393,6 +1427,141 @@
   function getQuizChoicePool() {
     return isLevelTwo() ? QUIZ_ITEMS : QUIZ_ITEMS.slice(0, 20);
   }
+  function startListenLockGame() {
+    state.listenLockIndex = 0;
+    state.listenLockCodes = createMemoryCodes();
+    state.listenInput = [];
+    state.heardListenIndexes = [];
+    state.isAdvancing = false;
+    showScreen("listen-lock");
+    renderListenLockRound();
+  }
+  function renderListenLockRound() {
+    state.listenInput = [];
+    state.heardListenIndexes = [];
+    state.isAdvancing = false;
+    elements.listenLockProgress.textContent = `${state.listenLockIndex + 1} / ${state.listenLockCodes.length}`;
+    elements.listenLockIcon.textContent = "🔒";
+    elements.listenLockStatus.textContent = "Locked";
+    elements.listenLockCard.style.borderColor = "#8b5cf6";
+    elements.listenLockHelperText.textContent = "Tap each blank box to hear its number.";
+    renderListenCodeDisplay();
+    renderListenInputDisplay();
+    renderListenKeypad();
+  }
+  function renderListenCodeDisplay() {
+    const code = getCurrentListenCode();
+    const boxes = code.map((digit, index) => {
+      const button = document.createElement("button");
+      button.className = `memory-digit listen-code-box ${state.heardListenIndexes.includes(index) ? "is-heard" : ""}`;
+      button.type = "button";
+      button.setAttribute("aria-label", `Hear number ${index + 1}`);
+      button.addEventListener("click", () => handleListenCodeBoxClick(index));
+      return button;
+    });
+    elements.listenCodeDisplay.replaceChildren(...boxes);
+  }
+  function handleListenCodeBoxClick(index) {
+    if (state.isAdvancing) {
+      return;
+    }
+    const digit = getCurrentListenCode()[index];
+    if (!state.heardListenIndexes.includes(index)) {
+      state.heardListenIndexes.push(index);
+      renderListenCodeDisplay();
+    }
+    void speakText(getMemoryNumberWord(digit));
+  }
+  function renderListenInputDisplay() {
+    const inputSlots = Array.from({ length: MEMORY_CODE_LENGTH }, (_, index) => {
+      const slot = document.createElement("span");
+      slot.className = "memory-input-slot";
+      slot.textContent = state.listenInput[index] === undefined ? "" : String(state.listenInput[index]);
+      return slot;
+    });
+    elements.listenInputDisplay.replaceChildren(...inputSlots);
+  }
+  function renderListenKeypad() {
+    const keys = MEMORY_KEYPAD_NUMBERS.map((number) => {
+      const button = document.createElement("button");
+      button.className = "memory-key";
+      button.type = "button";
+      button.textContent = String(number);
+      button.setAttribute("aria-label", `Type ${number}`);
+      button.addEventListener("click", () => handleListenNumberClick(number));
+      return button;
+    });
+    keys.push(createListenClearButton());
+    elements.listenKeypad.replaceChildren(...keys);
+  }
+  function createListenClearButton() {
+    const button = document.createElement("button");
+    button.className = "memory-key memory-clear-key";
+    button.type = "button";
+    button.textContent = "Clear";
+    button.setAttribute("aria-label", "Clear typed numbers");
+    button.addEventListener("click", handleListenClearClick);
+    return button;
+  }
+  function handleListenNumberClick(number) {
+    if (state.isAdvancing || state.listenInput.length >= MEMORY_CODE_LENGTH) {
+      return;
+    }
+    void speakText(getMemoryNumberWord(number));
+    state.listenInput.push(number);
+    renderListenInputDisplay();
+    if (state.listenInput.length !== MEMORY_CODE_LENGTH) {
+      return;
+    }
+    if (hasMatchingListenInput()) {
+      openListenLock();
+      return;
+    }
+    resetListenInputAfterMiss();
+  }
+  function handleListenClearClick() {
+    if (state.isAdvancing || state.listenInput.length === 0) {
+      return;
+    }
+    state.listenInput = [];
+    renderListenInputDisplay();
+    elements.listenLockHelperText.textContent = "Cleared. Listen and type again.";
+    void speakText("clear");
+  }
+  function hasMatchingListenInput() {
+    const code = getCurrentListenCode();
+    return code.every((digit, index) => digit === state.listenInput[index]);
+  }
+  function openListenLock() {
+    state.isAdvancing = true;
+    elements.listenLockIcon.textContent = "🔓";
+    elements.listenLockStatus.textContent = "Opened!";
+    elements.listenLockHelperText.textContent = "The lock opened!";
+    playHappySound();
+    window.setTimeout(advanceListenLock, NEXT_SCENARIO_DELAY_MS + 450);
+  }
+  function resetListenInputAfterMiss() {
+    state.listenInput = [];
+    renderListenInputDisplay();
+    elements.listenLockHelperText.textContent = "Try again. Tap the boxes to listen.";
+  }
+  function advanceListenLock() {
+    const isGameFinished = state.listenLockIndex + 1 >= state.listenLockCodes.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "listen-lock");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.listenLockIndex += 1;
+    renderListenLockRound();
+  }
+  function getCurrentListenCode() {
+    if (state.listenLockCodes.length === 0) {
+      state.listenLockCodes = createMemoryCodes();
+    }
+    return state.listenLockCodes[state.listenLockIndex];
+  }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
     state.memoryMode = memoryMode;
@@ -1730,7 +1899,7 @@
     oscillator.stop(options.startTime + 0.2);
   }
   function showScreen(screenName) {
-    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "memory-lock"].includes(screenName);
+    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "listen-lock", "memory-lock"].includes(screenName);
     updateAppViewportHeight();
     document.body.classList.toggle("is-game-active", isGameScreen);
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
@@ -1742,6 +1911,7 @@
     elements.numberGameScreen.classList.toggle("screen-active", screenName === "number-game");
     elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
     elements.whoAmIScreen.classList.toggle("screen-active", screenName === "who-am-i");
+    elements.listenLockScreen.classList.toggle("screen-active", screenName === "listen-lock");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
@@ -1815,6 +1985,7 @@
     getQuizItemCount: () => QUIZ_ITEMS.length,
     getQuizSessionCount: () => QUIZ_SESSION_COUNT,
     getMemoryLockCount: () => MEMORY_LOCK_COUNT,
+    getListenLockCount: () => MEMORY_LOCK_COUNT,
     getCurrentLevel: () => progress.level,
     getBuildInfo: () => APP_BUILD
   });
