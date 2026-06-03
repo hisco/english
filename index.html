@@ -195,6 +195,102 @@
         </div>
         <div id="music-keyboard" class="music-keyboard" aria-label="Music keys"></div>
       </section>
+      <section id="listen-lock-screen" class="screen game-screen listen-lock-screen" aria-labelledby="listen-lock-title">
+        <div id="listen-lock-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Listen Lock</p>
+            <h1 id="listen-lock-title">Hear the code</h1>
+          </div>
+          <div class="header-actions">
+            <button id="listen-lock-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="listen-lock-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="memory-stage">
+          <button id="listen-lock-card" class="card memory-lock-card" type="button" aria-label="Listen lock">
+            <span id="listen-lock-icon" class="memory-lock-icon" aria-hidden="true">🔒</span>
+            <span id="listen-lock-status" class="memory-lock-status">Locked</span>
+          </button>
+          <div id="listen-code-display" class="memory-code-display listen-code-display" aria-label="Tap boxes to hear code numbers"></div>
+          <div id="listen-input-display" class="memory-input-display" aria-label="Typed numbers"></div>
+          <p id="listen-lock-helper-text" class="helper-text">Tap each blank box to hear its number.</p>
+        </div>
+        <div id="listen-keypad" class="memory-keypad" aria-label="Number keypad"></div>
+      </section>
+      <section id="directions-game-screen" class="screen game-screen directions-game-screen" aria-labelledby="directions-game-title">
+        <div id="directions-game-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Directions</p>
+            <h1 id="directions-game-title">Find the direction</h1>
+          </div>
+          <div class="header-actions">
+            <button id="directions-game-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="directions-game-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="prompt-area">
+          <button id="directions-game-prompt-card" class="card direction-prompt-card" type="button" aria-label="Hear the direction">
+            <span class="direction-listen-symbol" aria-hidden="true">🔊</span>
+          </button>
+          <p id="directions-game-helper-text" class="helper-text">Tap the rectangle to hear a direction.</p>
+        </div>
+        <div id="directions-game-choice-grid" class="choice-grid" aria-label="Direction choices"></div>
+      </section>
+      <section id="math-game-screen" class="screen game-screen math-game-screen" aria-labelledby="math-game-title">
+        <div id="math-game-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Math Reveal</p>
+            <h1 id="math-game-title">Find the answer</h1>
+          </div>
+          <div class="header-actions">
+            <button id="math-game-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="math-game-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="math-stage">
+          <div id="math-token-row" class="math-token-row" aria-label="Math problem"></div>
+          <p id="math-game-helper-text" class="helper-text">Tap the glowing box.</p>
+        </div>
+      </section>
+      <section id="counting-game-screen" class="screen game-screen counting-game-screen" aria-labelledby="counting-game-title">
+        <div id="counting-game-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Counting</p>
+            <h1 id="counting-game-title">Count the things</h1>
+          </div>
+          <div class="header-actions">
+            <button id="counting-game-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="counting-game-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="counting-stage">
+          <div id="counting-items-card" class="card counting-items-card" aria-label="Items to count"></div>
+          <p id="counting-game-helper-text" class="helper-text">Count the emojis. Tap the number.</p>
+        </div>
+        <div id="counting-keypad" class="counting-keypad" aria-label="Counting number choices"></div>
+      </section>
+      <section id="feelings-game-screen" class="screen game-screen feelings-game-screen" aria-labelledby="feelings-game-title">
+        <div id="feelings-game-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Feelings</p>
+            <h1 id="feelings-game-title">Find the feeling</h1>
+          </div>
+          <div class="header-actions">
+            <button id="feelings-game-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="feelings-game-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="prompt-area">
+          <button id="feelings-game-prompt-card" class="card feelings-prompt-card" type="button" aria-label="Hear the feeling"></button>
+          <p id="feelings-game-helper-text" class="helper-text">Tap the big face to hear the feeling.</p>
+        </div>
+        <div id="feelings-game-choice-grid" class="choice-grid" aria-label="Feeling choices"></div>
+      </section>
       <section id="memory-lock-screen" class="screen game-screen memory-lock-screen" aria-labelledby="memory-lock-title">
         <div id="memory-lock-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
         <header class="game-header">

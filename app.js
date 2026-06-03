@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.11",
-    label: "2026-06-03 build 11",
-    cacheName: "little-english-games-v26"
+    version: "2026.06.03.12",
+    label: "2026-06-03 build 12",
+    cacheName: "little-english-games-v27"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -215,6 +215,30 @@
     Object.freeze({ answer: "toothbrush", emoji: "🪥", clueIcons: Object.freeze(["🦷", "🫧"]), clues: Object.freeze(["I clean teeth.", "Use me every day."]) })
   ]);
   const QUIZ_SESSION_COUNT = 5;
+  const DIRECTION_ITEMS = Object.freeze([
+    Object.freeze({ word: "up", symbol: "↑" }),
+    Object.freeze({ word: "right", symbol: "→" }),
+    Object.freeze({ word: "down", symbol: "↓" }),
+    Object.freeze({ word: "left", symbol: "←" })
+  ]);
+  const DIRECTION_SCENARIOS_PER_GAME = 5;
+  const MATH_SESSION_COUNT = 5;
+  const MATH_TOKEN_COUNT = 5;
+  const COUNTING_ITEM_POOL = Object.freeze(["🍎", "🍌", "🍪", "⭐", "⚽", "🧸", "🚗", "🐟", "🌼", "🎈", "🧩", "🥕"]);
+  const COUNTING_SESSION_COUNT = 5;
+  const FEELING_ITEMS = Object.freeze([
+    Object.freeze({ word: "happy", emoji: "😀" }),
+    Object.freeze({ word: "sad", emoji: "😢" }),
+    Object.freeze({ word: "angry", emoji: "😠" }),
+    Object.freeze({ word: "surprised", emoji: "😮" }),
+    Object.freeze({ word: "sleepy", emoji: "😴" }),
+    Object.freeze({ word: "scared", emoji: "😨" }),
+    Object.freeze({ word: "silly", emoji: "🤪" }),
+    Object.freeze({ word: "love", emoji: "😍" }),
+    Object.freeze({ word: "crying", emoji: "😭" }),
+    Object.freeze({ word: "confused", emoji: "😕" })
+  ]);
+  const FEELINGS_SESSION_COUNT = 5;
   const MUSIC_NOTES = Object.freeze([
     Object.freeze({ id: "do", label: "Do", frequency: 261.63 }),
     Object.freeze({ id: "re", label: "Re", frequency: 293.66 }),
@@ -366,6 +390,11 @@
     weatherGame: "#/weather",
     whoAmI: "#/who-am-i",
     musicGame: "#/music",
+    listenLock: "#/listen-lock",
+    directionsGame: "#/directions",
+    mathGame: "#/math",
+    countingGame: "#/counting",
+    feelingsGame: "#/feelings",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
   });
@@ -427,6 +456,46 @@
       actionLabel: "Play music"
     }),
     Object.freeze({
+      id: "listen-lock",
+      title: "Listen Lock",
+      emoji: "🔒 🔊 5",
+      color: "#8b5cf6",
+      description: "Tap blank boxes to hear numbers, then type the code.",
+      actionLabel: "Hear code"
+    }),
+    Object.freeze({
+      id: "directions-find",
+      title: "Directions",
+      emoji: "↑ → ↓ ←",
+      color: "#6366f1",
+      description: "Hear a direction and choose the matching arrow.",
+      actionLabel: "Find arrows"
+    }),
+    Object.freeze({
+      id: "math-reveal",
+      title: "Math Reveal",
+      emoji: "1 + 1",
+      color: "#14b8a6",
+      description: "Reveal a simple math problem one box at a time.",
+      actionLabel: "Solve math"
+    }),
+    Object.freeze({
+      id: "counting-game",
+      title: "Counting",
+      emoji: "🍎 🍌 ⭐",
+      color: "#22c55e",
+      description: "Count the emoji items and tap the matching number.",
+      actionLabel: "Count items"
+    }),
+    Object.freeze({
+      id: "feelings-find",
+      title: "Feelings",
+      emoji: "😀 😢 😮",
+      color: "#f472b6",
+      description: "Hear a feeling word and choose the matching face.",
+      actionLabel: "Find feelings"
+    }),
+    Object.freeze({
       id: "memory-lock",
       title: "Memory Lock",
       emoji: "🔒 1 2",
@@ -453,6 +522,10 @@
     weatherScenarios: [],
     quizScenarios: [],
     musicTunes: [],
+    listenLockCodes: [],
+    mathProblems: [],
+    countingScenarios: [],
+    feelingsScenarios: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
     hasRevealedSayFindChoices: false,
@@ -461,6 +534,7 @@
     hasRevealedNumberChoices: false,
     hasRevealedWeatherChoices: false,
     hasRevealedQuizChoices: false,
+    hasRevealedFeelingsChoices: false,
     isAdvancing: false,
     bagScenarioIndex: 0,
     actionScenarioIndex: 0,
@@ -470,8 +544,15 @@
     quizClueIndex: 0,
     musicTuneIndex: 0,
     musicNoteIndex: 0,
+    listenLockIndex: 0,
+    mathProblemIndex: 0,
+    mathRevealIndex: 0,
+    countingScenarioIndex: 0,
+    feelingsScenarioIndex: 0,
     memoryLockIndex: 0,
     memoryMode: MEMORY_MODES.visible,
+    listenInput: [],
+    heardListenIndexes: [],
     memoryInput: [],
     isMemoryCodeVisible: true,
     isMemoryOpen: false,
@@ -546,6 +627,44 @@
     musicKeyboard: document.getElementById("music-keyboard"),
     musicGameProgress: document.getElementById("music-game-progress"),
     musicGameParentExit: document.getElementById("music-game-parent-exit"),
+    listenLockScreen: document.getElementById("listen-lock-screen"),
+    listenLockBackButton: document.getElementById("listen-lock-back-button"),
+    listenLockCard: document.getElementById("listen-lock-card"),
+    listenLockIcon: document.getElementById("listen-lock-icon"),
+    listenLockStatus: document.getElementById("listen-lock-status"),
+    listenLockProgress: document.getElementById("listen-lock-progress"),
+    listenCodeDisplay: document.getElementById("listen-code-display"),
+    listenInputDisplay: document.getElementById("listen-input-display"),
+    listenLockHelperText: document.getElementById("listen-lock-helper-text"),
+    listenKeypad: document.getElementById("listen-keypad"),
+    listenLockParentExit: document.getElementById("listen-lock-parent-exit"),
+    directionsGameScreen: document.getElementById("directions-game-screen"),
+    directionsGameBackButton: document.getElementById("directions-game-back-button"),
+    directionsGamePromptCard: document.getElementById("directions-game-prompt-card"),
+    directionsGameChoiceGrid: document.getElementById("directions-game-choice-grid"),
+    directionsGameHelperText: document.getElementById("directions-game-helper-text"),
+    directionsGameProgress: document.getElementById("directions-game-progress"),
+    directionsGameParentExit: document.getElementById("directions-game-parent-exit"),
+    mathGameScreen: document.getElementById("math-game-screen"),
+    mathGameBackButton: document.getElementById("math-game-back-button"),
+    mathTokenRow: document.getElementById("math-token-row"),
+    mathGameHelperText: document.getElementById("math-game-helper-text"),
+    mathGameProgress: document.getElementById("math-game-progress"),
+    mathGameParentExit: document.getElementById("math-game-parent-exit"),
+    countingGameScreen: document.getElementById("counting-game-screen"),
+    countingGameBackButton: document.getElementById("counting-game-back-button"),
+    countingItemsCard: document.getElementById("counting-items-card"),
+    countingKeypad: document.getElementById("counting-keypad"),
+    countingGameHelperText: document.getElementById("counting-game-helper-text"),
+    countingGameProgress: document.getElementById("counting-game-progress"),
+    countingGameParentExit: document.getElementById("counting-game-parent-exit"),
+    feelingsGameScreen: document.getElementById("feelings-game-screen"),
+    feelingsGameBackButton: document.getElementById("feelings-game-back-button"),
+    feelingsGamePromptCard: document.getElementById("feelings-game-prompt-card"),
+    feelingsGameChoiceGrid: document.getElementById("feelings-game-choice-grid"),
+    feelingsGameHelperText: document.getElementById("feelings-game-helper-text"),
+    feelingsGameProgress: document.getElementById("feelings-game-progress"),
+    feelingsGameParentExit: document.getElementById("feelings-game-parent-exit"),
     memoryLockScreen: document.getElementById("memory-lock-screen"),
     memoryLockBackButton: document.getElementById("memory-lock-back-button"),
     memoryLockCard: document.getElementById("memory-lock-card"),
@@ -581,6 +700,11 @@
     elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.whoAmIBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.musicGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.listenLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.directionsGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.mathGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.countingGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.feelingsGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
     elements.packBagPromptCard.addEventListener("click", handlePackBagPromptClick);
@@ -588,6 +712,7 @@
     elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
     elements.weatherGamePromptCard.addEventListener("click", handleWeatherPromptClick);
     elements.whoAmIPromptCard.addEventListener("click", handleQuizPromptClick);
+    elements.feelingsGamePromptCard.addEventListener("click", handleFeelingsPromptClick);
     elements.memoryLockCard.addEventListener("click", handleMemoryLockClick);
     window.addEventListener("hashchange", renderCurrentRoute);
     bindParentExit(elements.sayFindParentExit, () => navigateTo(ROUTES.sayFindPacks));
@@ -597,6 +722,11 @@
     bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.whoAmIParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.musicGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.listenLockParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.directionsGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.mathGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.countingGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.feelingsGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
   function bindParentExit(element, exitHandler) {
@@ -684,6 +814,26 @@
     }
     if (hash === ROUTES.musicGame) {
       startMusicGame();
+      return;
+    }
+    if (hash === ROUTES.listenLock) {
+      startListenLockGame();
+      return;
+    }
+    if (hash === ROUTES.directionsGame) {
+      startDirectionsGame();
+      return;
+    }
+    if (hash === ROUTES.mathGame) {
+      startMathGame();
+      return;
+    }
+    if (hash === ROUTES.countingGame) {
+      startCountingGame();
+      return;
+    }
+    if (hash === ROUTES.feelingsGame) {
+      startFeelingsGame();
       return;
     }
     if (hash === ROUTES.memoryLock) {
@@ -799,6 +949,26 @@
     }
     if (gameId === "music-time") {
       navigateTo(ROUTES.musicGame);
+      return;
+    }
+    if (gameId === "listen-lock") {
+      navigateTo(ROUTES.listenLock);
+      return;
+    }
+    if (gameId === "directions-find") {
+      navigateTo(ROUTES.directionsGame);
+      return;
+    }
+    if (gameId === "math-reveal") {
+      navigateTo(ROUTES.mathGame);
+      return;
+    }
+    if (gameId === "counting-game") {
+      navigateTo(ROUTES.countingGame);
+      return;
+    }
+    if (gameId === "feelings-find") {
+      navigateTo(ROUTES.feelingsGame);
       return;
     }
     if (gameId === "memory-lock") {
@@ -1528,6 +1698,499 @@
   function getMusicNoteById(noteId) {
     return MUSIC_NOTES.find((note) => note.id === noteId);
   }
+  function startListenLockGame() {
+    state.listenLockIndex = 0;
+    state.listenLockCodes = createMemoryCodes();
+    state.listenInput = [];
+    state.heardListenIndexes = [];
+    state.isAdvancing = false;
+    showScreen("listen-lock");
+    renderListenLockRound();
+  }
+  function renderListenLockRound() {
+    state.listenInput = [];
+    state.heardListenIndexes = [];
+    state.isAdvancing = false;
+    elements.listenLockProgress.textContent = `${state.listenLockIndex + 1} / ${state.listenLockCodes.length}`;
+    elements.listenLockIcon.textContent = "🔒";
+    elements.listenLockStatus.textContent = "Locked";
+    elements.listenLockCard.style.borderColor = "#8b5cf6";
+    elements.listenLockHelperText.textContent = "Tap each blank box to hear its number.";
+    renderListenCodeDisplay();
+    renderListenInputDisplay();
+    renderListenKeypad();
+  }
+  function renderListenCodeDisplay() {
+    const code = getCurrentListenCode();
+    const boxes = code.map((digit, index) => {
+      const button = document.createElement("button");
+      button.className = `memory-digit listen-code-box ${state.heardListenIndexes.includes(index) ? "is-heard" : ""}`;
+      button.type = "button";
+      button.setAttribute("aria-label", `Hear number ${index + 1}`);
+      button.addEventListener("click", () => handleListenCodeBoxClick(index));
+      return button;
+    });
+    elements.listenCodeDisplay.replaceChildren(...boxes);
+  }
+  function handleListenCodeBoxClick(index) {
+    if (state.isAdvancing) {
+      return;
+    }
+    const digit = getCurrentListenCode()[index];
+    if (!state.heardListenIndexes.includes(index)) {
+      state.heardListenIndexes.push(index);
+      renderListenCodeDisplay();
+    }
+    void speakText(getMemoryNumberWord(digit));
+  }
+  function renderListenInputDisplay() {
+    const inputSlots = Array.from({ length: MEMORY_CODE_LENGTH }, (_, index) => {
+      const slot = document.createElement("span");
+      slot.className = "memory-input-slot";
+      slot.textContent = state.listenInput[index] === undefined ? "" : String(state.listenInput[index]);
+      return slot;
+    });
+    elements.listenInputDisplay.replaceChildren(...inputSlots);
+  }
+  function renderListenKeypad() {
+    const keys = MEMORY_KEYPAD_NUMBERS.map((number) => {
+      const button = document.createElement("button");
+      button.className = "memory-key";
+      button.type = "button";
+      button.textContent = String(number);
+      button.setAttribute("aria-label", `Type ${number}`);
+      button.addEventListener("click", () => handleListenNumberClick(number));
+      return button;
+    });
+    keys.push(createListenClearButton());
+    elements.listenKeypad.replaceChildren(...keys);
+  }
+  function createListenClearButton() {
+    const button = document.createElement("button");
+    button.className = "memory-key memory-clear-key";
+    button.type = "button";
+    button.textContent = "Clear";
+    button.setAttribute("aria-label", "Clear typed numbers");
+    button.addEventListener("click", handleListenClearClick);
+    return button;
+  }
+  function handleListenNumberClick(number) {
+    if (state.isAdvancing || state.listenInput.length >= MEMORY_CODE_LENGTH) {
+      return;
+    }
+    void speakText(getMemoryNumberWord(number));
+    state.listenInput.push(number);
+    renderListenInputDisplay();
+    if (state.listenInput.length !== MEMORY_CODE_LENGTH) {
+      return;
+    }
+    if (hasMatchingListenInput()) {
+      openListenLock();
+      return;
+    }
+    resetListenInputAfterMiss();
+  }
+  function handleListenClearClick() {
+    if (state.isAdvancing || state.listenInput.length === 0) {
+      return;
+    }
+    state.listenInput = [];
+    renderListenInputDisplay();
+    elements.listenLockHelperText.textContent = "Cleared. Listen and type again.";
+    void speakText("clear");
+  }
+  function hasMatchingListenInput() {
+    const code = getCurrentListenCode();
+    return code.every((digit, index) => digit === state.listenInput[index]);
+  }
+  function openListenLock() {
+    state.isAdvancing = true;
+    elements.listenLockIcon.textContent = "🔓";
+    elements.listenLockStatus.textContent = "Opened!";
+    elements.listenLockHelperText.textContent = "The lock opened!";
+    playHappySound();
+    window.setTimeout(advanceListenLock, NEXT_SCENARIO_DELAY_MS + 450);
+  }
+  function resetListenInputAfterMiss() {
+    state.listenInput = [];
+    renderListenInputDisplay();
+    elements.listenLockHelperText.textContent = "Try again. Tap the boxes to listen.";
+  }
+  function advanceListenLock() {
+    const isGameFinished = state.listenLockIndex + 1 >= state.listenLockCodes.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "listen-lock");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.listenLockIndex += 1;
+    renderListenLockRound();
+  }
+  function getCurrentListenCode() {
+    if (state.listenLockCodes.length === 0) {
+      state.listenLockCodes = createMemoryCodes();
+    }
+    return state.listenLockCodes[state.listenLockIndex];
+  }
+  function startDirectionsGame() {
+    state.directionScenarioIndex = 0;
+    state.directionScenarios = createDirectionScenarios();
+    state.hasRevealedDirectionChoices = false;
+    state.isAdvancing = false;
+    showScreen("directions-game");
+    renderDirectionScenario();
+  }
+  function renderDirectionScenario() {
+    const scenario = getCurrentDirectionScenario();
+    state.hasRevealedDirectionChoices = false;
+    state.isAdvancing = false;
+    elements.directionsGameProgress.textContent = `${state.directionScenarioIndex + 1} / ${state.directionScenarios.length}`;
+    elements.directionsGamePromptCard.style.borderColor = "#6366f1";
+    elements.directionsGamePromptCard.setAttribute("aria-label", "Hear the direction");
+    elements.directionsGameChoiceGrid.replaceChildren();
+    elements.directionsGameHelperText.textContent = "Tap the rectangle to hear a direction.";
+  }
+  function handleDirectionPromptClick() {
+    const scenario = getCurrentDirectionScenario();
+    void speakText(scenario.word);
+    if (state.hasRevealedDirectionChoices) {
+      return;
+    }
+    state.hasRevealedDirectionChoices = true;
+    elements.directionsGameHelperText.textContent = "Tap the arrow that matches.";
+    renderDirectionChoices(scenario);
+  }
+  function renderDirectionChoices(scenario) {
+    const choiceCards = shuffleItems(DIRECTION_ITEMS).map((choice) => createDirectionChoiceCard(choice, scenario.word));
+    elements.directionsGameChoiceGrid.replaceChildren(...choiceCards);
+  }
+  function createDirectionChoiceCard(choice, answerWord) {
+    const button = document.createElement("button");
+    button.className = "card choice-card";
+    button.type = "button";
+    button.setAttribute("aria-label", choice.word);
+    button.innerHTML = `
+      <span class="direction-symbol" aria-hidden="true">${choice.symbol}</span>
+      <span class="word-label">${choice.word}</span>
+    `;
+    button.addEventListener("click", () => handleDirectionChoiceClick(choice, answerWord, button));
+    return button;
+  }
+  async function handleDirectionChoiceClick(choice, answerWord, button) {
+    if (state.isAdvancing) {
+      return;
+    }
+    if (choice.word !== answerWord) {
+      await speakText(choice.word);
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(choice.word);
+    playHappySound();
+    window.setTimeout(advanceDirectionScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceDirectionScenario() {
+    const isGameFinished = state.directionScenarioIndex + 1 >= state.directionScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "directions-find");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.directionScenarioIndex += 1;
+    renderDirectionScenario();
+  }
+  function getCurrentDirectionScenario() {
+    if (state.directionScenarios.length === 0) {
+      state.directionScenarios = createDirectionScenarios();
+    }
+    return state.directionScenarios[state.directionScenarioIndex];
+  }
+  function createDirectionScenarios() {
+    return Array.from({ length: DIRECTION_SCENARIOS_PER_GAME }, () => DIRECTION_ITEMS[Math.floor(Math.random() * DIRECTION_ITEMS.length)]);
+  }
+  function startMathGame() {
+    state.mathProblemIndex = 0;
+    state.mathRevealIndex = 0;
+    state.mathProblems = createMathProblems();
+    state.isAdvancing = false;
+    showScreen("math");
+    renderMathProblem();
+  }
+  function renderMathProblem() {
+    state.mathRevealIndex = 0;
+    state.isAdvancing = false;
+    elements.mathGameProgress.textContent = `${state.mathProblemIndex + 1} / ${state.mathProblems.length}`;
+    elements.mathGameHelperText.textContent = "Tap the glowing box.";
+    renderMathTokens();
+  }
+  function renderMathTokens() {
+    const problem = getCurrentMathProblem();
+    const tokenButtons = problem.tokens.map((token, index) => {
+      const button = document.createElement("button");
+      const isRevealed = index < state.mathRevealIndex;
+      const isNext = index === state.mathRevealIndex;
+      button.className = `math-token ${isRevealed ? "is-revealed" : "is-hidden"} ${isNext ? "is-next" : ""}`;
+      button.type = "button";
+      button.setAttribute("aria-label", isRevealed ? token.speech : "Reveal next math part");
+      button.textContent = isRevealed ? token.display : "";
+      button.addEventListener("click", () => handleMathTokenClick(index));
+      return button;
+    });
+    elements.mathTokenRow.replaceChildren(...tokenButtons);
+  }
+  function handleMathTokenClick(index) {
+    if (state.isAdvancing || index !== state.mathRevealIndex) {
+      return;
+    }
+    const problem = getCurrentMathProblem();
+    const token = problem.tokens[index];
+    void speakText(token.speech);
+    state.mathRevealIndex += 1;
+    renderMathTokens();
+    if (state.mathRevealIndex < MATH_TOKEN_COUNT) {
+      elements.mathGameHelperText.textContent = "Good. Tap the next box.";
+      return;
+    }
+    finishMathProblem();
+  }
+  function finishMathProblem() {
+    state.isAdvancing = true;
+    elements.mathGameHelperText.textContent = "You solved it!";
+    playHappySound();
+    window.setTimeout(advanceMathProblem, NEXT_SCENARIO_DELAY_MS + 500);
+  }
+  function advanceMathProblem() {
+    const isGameFinished = state.mathProblemIndex + 1 >= state.mathProblems.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "math-reveal");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.mathProblemIndex += 1;
+    renderMathProblem();
+  }
+  function getCurrentMathProblem() {
+    if (state.mathProblems.length === 0) {
+      state.mathProblems = createMathProblems();
+    }
+    return state.mathProblems[state.mathProblemIndex];
+  }
+  function createMathProblems() {
+    const problems = [];
+    while (problems.length < MATH_SESSION_COUNT) {
+      const problem = createRandomMathProblem();
+      const key = problem.tokens.map((token) => token.display).join(" ");
+      const hasDuplicate = problems.some((existingProblem) => existingProblem.tokens.map((token) => token.display).join(" ") === key);
+      if (!hasDuplicate) {
+        problems.push(problem);
+      }
+    }
+    return problems;
+  }
+  function createRandomMathProblem() {
+    return Math.random() >= 0.35 ? createAdditionProblem() : createSubtractionProblem();
+  }
+  function createAdditionProblem() {
+    const first = Math.floor(Math.random() * 10);
+    const maxResult = Math.min(10, first + 9);
+    const minResult = Math.max(1, first);
+    const result = minResult + Math.floor(Math.random() * (maxResult - minResult + 1));
+    const second = result - first;
+    return createMathProblem({ first, operator: "+", second, result });
+  }
+  function createSubtractionProblem() {
+    const first = 1 + Math.floor(Math.random() * 9);
+    const result = 1 + Math.floor(Math.random() * first);
+    const second = first - result;
+    return createMathProblem({ first, operator: "−", second, result });
+  }
+  function createMathProblem(values) {
+    return Object.freeze({
+      tokens: Object.freeze([
+        createMathToken(String(values.first), getMemoryNumberWord(values.first)),
+        createMathToken(values.operator, values.operator === "+" ? "plus" : "minus"),
+        createMathToken(String(values.second), getMemoryNumberWord(values.second)),
+        createMathToken("=", "equals"),
+        createMathToken(String(values.result), getMemoryNumberWord(values.result))
+      ])
+    });
+  }
+  function createMathToken(display, speech) {
+    return Object.freeze({ display, speech });
+  }
+  function startCountingGame() {
+    state.countingScenarioIndex = 0;
+    state.countingScenarios = createCountingScenarios();
+    state.isAdvancing = false;
+    showScreen("counting");
+    renderCountingScenario();
+  }
+  function renderCountingScenario() {
+    const scenario = getCurrentCountingScenario();
+    state.isAdvancing = false;
+    elements.countingGameProgress.textContent = `${state.countingScenarioIndex + 1} / ${state.countingScenarios.length}`;
+    elements.countingGameHelperText.textContent = "Count the emojis. Tap the number.";
+    renderCountingItems(scenario);
+    renderCountingKeypad(scenario.count);
+  }
+  function renderCountingItems(scenario) {
+    const itemElements = scenario.items.map((emoji) => {
+      const item = document.createElement("span");
+      item.className = "counting-item";
+      item.textContent = emoji;
+      return item;
+    });
+    const grid = document.createElement("div");
+    grid.className = "counting-items-grid";
+    grid.append(...itemElements);
+    elements.countingItemsCard.replaceChildren(grid);
+  }
+  function renderCountingKeypad(answerCount) {
+    const keys = shuffleItems(NUMBER_ROUNDS.slice(0, 9)).map((numberItem) => {
+      const button = document.createElement("button");
+      button.className = "counting-key";
+      button.type = "button";
+      button.textContent = String(numberItem.number);
+      button.setAttribute("aria-label", numberItem.word);
+      button.addEventListener("click", () => handleCountingNumberClick(numberItem, answerCount, button));
+      return button;
+    });
+    elements.countingKeypad.replaceChildren(...keys);
+  }
+  async function handleCountingNumberClick(numberItem, answerCount, button) {
+    if (state.isAdvancing || numberItem.number !== answerCount) {
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(numberItem.word);
+    playHappySound();
+    window.setTimeout(advanceCountingScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceCountingScenario() {
+    const isGameFinished = state.countingScenarioIndex + 1 >= state.countingScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "counting-game");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.countingScenarioIndex += 1;
+    renderCountingScenario();
+  }
+  function getCurrentCountingScenario() {
+    if (state.countingScenarios.length === 0) {
+      state.countingScenarios = createCountingScenarios();
+    }
+    return state.countingScenarios[state.countingScenarioIndex];
+  }
+  function createCountingScenarios() {
+    const counts = shuffleItems(NUMBER_ROUNDS.slice(0, 9)).slice(0, COUNTING_SESSION_COUNT).map((item) => item.number);
+    return counts.map((count) => Object.freeze({
+      count,
+      items: Object.freeze(shuffleItems(COUNTING_ITEM_POOL).slice(0, count))
+    }));
+  }
+  function startFeelingsGame() {
+    state.feelingsScenarioIndex = 0;
+    state.feelingsScenarios = createFeelingsScenarios();
+    state.isAdvancing = false;
+    showScreen("feelings");
+    renderFeelingsScenario();
+  }
+  function renderFeelingsScenario() {
+    const scenario = getCurrentFeelingsScenario();
+    state.hasRevealedFeelingsChoices = false;
+    state.isAdvancing = false;
+    elements.feelingsGameProgress.textContent = `${state.feelingsScenarioIndex + 1} / ${state.feelingsScenarios.length}`;
+    elements.feelingsGamePromptCard.style.borderColor = "#f472b6";
+    elements.feelingsGamePromptCard.setAttribute("aria-label", `Hear ${scenario.word}`);
+    elements.feelingsGamePromptCard.replaceChildren(createFeelingCardContent(scenario));
+    elements.feelingsGameChoiceGrid.replaceChildren();
+    elements.feelingsGameHelperText.textContent = "Tap the big face to hear the feeling.";
+  }
+  function createFeelingCardContent(feeling) {
+    const fragment = document.createDocumentFragment();
+    const icon = document.createElement("span");
+    const label = document.createElement("span");
+    icon.className = "feeling-symbol";
+    icon.setAttribute("aria-hidden", "true");
+    icon.textContent = feeling.emoji;
+    label.className = "word-label";
+    label.textContent = feeling.word;
+    fragment.append(icon, label);
+    return fragment;
+  }
+  function handleFeelingsPromptClick() {
+    const scenario = getCurrentFeelingsScenario();
+    void speakText(scenario.word);
+    if (state.hasRevealedFeelingsChoices) {
+      return;
+    }
+    state.hasRevealedFeelingsChoices = true;
+    elements.feelingsGameHelperText.textContent = "Tap the faces. Every face speaks.";
+    renderFeelingChoices(scenario);
+  }
+  function renderFeelingChoices(scenario) {
+    const cards = createFeelingChoices(scenario).map((choice) => createFeelingChoiceCard(choice, scenario.word));
+    elements.feelingsGameChoiceGrid.replaceChildren(...cards);
+  }
+  function createFeelingChoices(scenario) {
+    const pool = isLevelTwo() ? FEELING_ITEMS : FEELING_ITEMS.slice(0, 6);
+    const others = pool.filter((item) => item.word !== scenario.word);
+    return shuffleItems([scenario, ...shuffleItems(others).slice(0, CHOICE_COUNT - 1)]);
+  }
+  function createFeelingChoiceCard(choice, answerWord) {
+    const button = document.createElement("button");
+    button.className = "card choice-card";
+    button.type = "button";
+    button.setAttribute("aria-label", choice.word);
+    button.innerHTML = `
+      <span class="feeling-symbol" aria-hidden="true">${choice.emoji}</span>
+      <span class="word-label">${choice.word}</span>
+    `;
+    button.addEventListener("click", () => handleFeelingChoiceClick(choice, answerWord, button));
+    return button;
+  }
+  async function handleFeelingChoiceClick(choice, answerWord, button) {
+    if (state.isAdvancing) {
+      return;
+    }
+    if (choice.word !== answerWord) {
+      await speakText(choice.word);
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(choice.word);
+    playHappySound();
+    window.setTimeout(advanceFeelingsScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceFeelingsScenario() {
+    const isGameFinished = state.feelingsScenarioIndex + 1 >= state.feelingsScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "feelings-find");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.feelingsScenarioIndex += 1;
+    renderFeelingsScenario();
+  }
+  function getCurrentFeelingsScenario() {
+    if (state.feelingsScenarios.length === 0) {
+      state.feelingsScenarios = createFeelingsScenarios();
+    }
+    return state.feelingsScenarios[state.feelingsScenarioIndex];
+  }
+  function createFeelingsScenarios() {
+    const pool = isLevelTwo() ? FEELING_ITEMS : FEELING_ITEMS.slice(0, 6);
+    return shuffleItems(pool).slice(0, FEELINGS_SESSION_COUNT);
+  }
   function startMemoryLockGame(memoryMode) {
     clearMemoryPeekTimer();
     state.memoryMode = memoryMode;
@@ -1873,7 +2536,7 @@
     oscillator.stop(options.startTime + duration);
   }
   function showScreen(screenName) {
-    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "music", "memory-lock"].includes(screenName);
+    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "music", "listen-lock", "directions-game", "math", "counting", "feelings", "memory-lock"].includes(screenName);
     updateAppViewportHeight();
     document.body.classList.toggle("is-game-active", isGameScreen);
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
@@ -1886,6 +2549,11 @@
     elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
     elements.whoAmIScreen.classList.toggle("screen-active", screenName === "who-am-i");
     elements.musicGameScreen.classList.toggle("screen-active", screenName === "music");
+    elements.listenLockScreen.classList.toggle("screen-active", screenName === "listen-lock");
+    elements.directionsGameScreen.classList.toggle("screen-active", screenName === "directions-game");
+    elements.mathGameScreen.classList.toggle("screen-active", screenName === "math");
+    elements.countingGameScreen.classList.toggle("screen-active", screenName === "counting");
+    elements.feelingsGameScreen.classList.toggle("screen-active", screenName === "feelings");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
       clearMemoryPeekTimer();
@@ -1960,6 +2628,11 @@
     getQuizSessionCount: () => QUIZ_SESSION_COUNT,
     getMusicTuneCount: () => MUSIC_TUNES.length,
     getMusicSessionCount: () => MUSIC_SESSION_COUNT,
+    getListenLockCount: () => MEMORY_LOCK_COUNT,
+    getDirectionScenarioCount: () => DIRECTION_SCENARIOS_PER_GAME,
+    getMathSessionCount: () => MATH_SESSION_COUNT,
+    getCountingSessionCount: () => COUNTING_SESSION_COUNT,
+    getFeelingsSessionCount: () => FEELINGS_SESSION_COUNT,
     getMemoryLockCount: () => MEMORY_LOCK_COUNT,
     getCurrentLevel: () => progress.level,
     getBuildInfo: () => APP_BUILD
