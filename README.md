@@ -7,7 +7,7 @@ A dependency-free static web catalog of gentle English listening games for young
 - **Say & Find**: choose a themed pack, hear a word, explore cards, and find the matching picture. Each pack has five picture rounds and five sound-only rounds.
 - **Pack My Bag**: hear what to pack, tap cards to explore their words, and put the matching item in the bag.
 - **Who Is Doing It?**: hear noun and verb phrases, explore action cards, and match who is doing the action.
-- **Number Find**: hear numbers, explore ordered choices, and find each number sequentially from 1 to 10.
+- **Number Find**: hear numbers, explore shuffled choices, and find numbers from 1 to 10 in changing order.
 - **What Is the Weather?**: hear weather words, explore weather icons, and find the matching weather.
 - **Memory Lock**: copy four visible numbers to open a lock.
 - **Memory Lock Plus**: peek at four numbers, remember the hidden one, and type the code to open the lock.
@@ -22,7 +22,7 @@ When a child completes a game, the app shows a short confetti celebration and a 
 
 The catalog includes a global **Settings** screen that affects every game:
 
-- **Level 1: Learn** keeps the original guided behavior: predictable order, smaller pools, and simpler choices.
+- **Level 1: Learn** keeps guided behavior with smaller pools and simpler choices, but rounds and answer positions still change.
 - **Level 2: Mix** adds more randomness: larger word/object/action pools, shuffled rounds, randomized number choices, and random memory lock codes.
 
 Wrong taps and failed memory attempts remain gentle: no penalties, no negative sounds, and the child can keep trying.
