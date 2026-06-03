@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.1",
-    label: "2026-06-03 build 1",
-    cacheName: "little-english-games-v17"
+    version: "2026.06.03.3",
+    label: "2026-06-03 build 3",
+    cacheName: "little-english-games-v18"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({

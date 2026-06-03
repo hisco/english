@@ -1,4 +1,4 @@
-const CACHE_NAME = "little-english-games-v17";
+const CACHE_NAME = "little-english-games-v18";
 const OFFLINE_FILES = Object.freeze([
   "./",
   "./index.html",

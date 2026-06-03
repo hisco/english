@@ -60,7 +60,9 @@ button {
 }
 
 .app-shell {
+  height: var(--app-viewport-height);
   min-height: var(--app-viewport-height);
+  overflow: hidden;
   padding: var(--app-shell-padding);
 }
 
@@ -75,8 +77,14 @@ button {
 }
 
 .screen-active:not(.game-screen) {
-  min-height: calc(var(--app-viewport-height) - (var(--app-shell-padding) * 2));
-  overflow: visible;
+  height: calc(var(--app-viewport-height) - (var(--app-shell-padding) * 2));
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y manipulation;
 }
 
 .hero {
@@ -199,6 +207,13 @@ h1 {
   color: var(--muted);
   font-size: 0.95rem;
   font-weight: 800;
+}
+
+
+.catalog-grid,
+.pack-grid,
+.settings-grid {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 .catalog-grid,
