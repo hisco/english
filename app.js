@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.4",
-    label: "2026-06-03 build 4",
-    cacheName: "little-english-games-v19"
+    version: "2026.06.03.5",
+    label: "2026-06-03 build 5",
+    cacheName: "little-english-games-v20"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -172,13 +172,7 @@
     Object.freeze({ word: "hot", emoji: "🥵" }),
     Object.freeze({ word: "cold", emoji: "🥶" })
   ]);
-  const MEMORY_CODES = Object.freeze([
-    Object.freeze([1, 2, 3, 4]),
-    Object.freeze([2, 5, 8, 0]),
-    Object.freeze([3, 1, 4, 2]),
-    Object.freeze([6, 7, 8, 9]),
-    Object.freeze([9, 0, 1, 2])
-  ]);
+  const MEMORY_LOCK_COUNT = 5;
   const MEMORY_KEYPAD_NUMBERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
   const MEMORY_MODES = Object.freeze({ visible: "visible", hidden: "hidden" });
   const CELEBRATION_MESSAGES = Object.freeze([
@@ -1431,11 +1425,10 @@
   }
   function createMemoryCodes() {
     const codes = [];
-    while (codes.length < MEMORY_CODES.length) {
+    while (codes.length < MEMORY_LOCK_COUNT) {
       const code = createRandomMemoryCode();
-      const key = getMemoryCodeKey(code);
-      const hasDuplicate = codes.some((existingCode) => getMemoryCodeKey(existingCode) === key);
-      if (!hasDuplicate && !isPresetMemoryCode(code)) {
+      const hasDuplicate = codes.some((existingCode) => getMemoryCodeKey(existingCode) === getMemoryCodeKey(code));
+      if (!hasDuplicate) {
         codes.push(Object.freeze(code));
       }
     }
@@ -1444,18 +1437,11 @@
   function createRandomMemoryCode() {
     return Array.from({ length: MEMORY_CODE_LENGTH }, () => Math.floor(Math.random() * 10));
   }
-  function isPresetMemoryCode(code) {
-    const key = getMemoryCodeKey(code);
-    return MEMORY_CODES.some((presetCode) => getMemoryCodeKey(presetCode) === key);
-  }
   function getMemoryCodeKey(code) {
     return code.join("");
   }
   function createMemoryHiddenIndexes() {
-    if (!isLevelTwo()) {
-      return shuffleItems(MEMORY_CODES.map((_, index) => index % MEMORY_CODE_LENGTH));
-    }
-    return MEMORY_CODES.map(() => Math.floor(Math.random() * MEMORY_CODE_LENGTH));
+    return Array.from({ length: MEMORY_LOCK_COUNT }, () => Math.floor(Math.random() * MEMORY_CODE_LENGTH));
   }
   function getMemoryHiddenIndex() {
     if (state.memoryHiddenIndexes.length === 0) {
@@ -1649,7 +1635,7 @@
     getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME,
     getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME,
     getWeatherScenarioCount: () => WEATHER_SCENARIOS_PER_GAME,
-    getMemoryLockCount: () => MEMORY_CODES.length,
+    getMemoryLockCount: () => MEMORY_LOCK_COUNT,
     getCurrentLevel: () => progress.level,
     getBuildInfo: () => APP_BUILD
   });
