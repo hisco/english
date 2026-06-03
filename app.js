@@ -711,6 +711,7 @@
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
     elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
     elements.weatherGamePromptCard.addEventListener("click", handleWeatherPromptClick);
+    elements.directionsGamePromptCard.addEventListener("click", handleDirectionPromptClick);
     elements.whoAmIPromptCard.addEventListener("click", handleQuizPromptClick);
     elements.feelingsGamePromptCard.addEventListener("click", handleFeelingsPromptClick);
     elements.memoryLockCard.addEventListener("click", handleMemoryLockClick);
