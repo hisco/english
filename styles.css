@@ -365,7 +365,35 @@ h1 {
 
 .game-screen .prompt-area,
 .game-screen .bag-stage,
-.game-screen .memory-stage {
+.game-screen 
+.who-am-i-prompt-card {
+  gap: 0.6rem;
+  width: min(25rem, 90vw);
+  min-height: min(42vh, 18rem);
+  border-color: #14b8a6;
+}
+
+.mystery-symbol {
+  font-size: clamp(5rem, 18vw, 10rem);
+  line-height: 1;
+}
+
+.clue-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: center;
+  min-height: 2.4rem;
+  font-size: clamp(2rem, 8vw, 4rem);
+  line-height: 1;
+}
+
+.choice-card .quiz-answer-symbol {
+  font-size: clamp(4.5rem, 16vw, 8rem);
+  line-height: 1;
+}
+
+.memory-stage {
   flex: 0 1 auto;
   min-height: 0;
 }
@@ -747,7 +775,8 @@ h1 {
   .bag-prompt-card,
   .action-prompt-card,
   .number-prompt-card,
-  .weather-prompt-card {
+  .weather-prompt-card,
+  .who-am-i-prompt-card {
     min-height: min(34vh, 15rem);
   }
   .choice-card {
@@ -762,6 +791,7 @@ h1 {
   .bag-emoji,
   .action-pair,
   .weather-symbol,
+  .mystery-symbol,
   .number-symbol {
     font-size: clamp(4.4rem, 16vw, 8rem);
   }
