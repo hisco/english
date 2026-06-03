@@ -393,6 +393,25 @@ h1 {
   line-height: 1;
 }
 
+
+.direction-prompt-card {
+  width: min(28rem, 92vw);
+  min-height: min(34vh, 14rem);
+  border-color: #6366f1;
+}
+
+.direction-listen-symbol,
+.direction-symbol {
+  color: var(--primary-dark);
+  font-size: clamp(5rem, 18vw, 10rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.choice-card .direction-symbol {
+  font-size: clamp(4.5rem, 16vw, 8rem);
+}
+
 .memory-stage {
   flex: 0 1 auto;
   min-height: 0;
@@ -555,7 +574,8 @@ h1 {
 .pack-bag-screen .choice-card.is-found,
 .action-game-screen .choice-card.is-found,
 .number-game-screen .choice-card.is-found,
-.weather-game-screen .choice-card.is-found {
+.weather-game-screen .choice-card.is-found,
+.directions-game-screen .choice-card.is-found {
   transform: translateY(-0.8rem) scale(0.96);
 }
 
@@ -791,6 +811,8 @@ h1 {
   .bag-emoji,
   .action-pair,
   .weather-symbol,
+  .direction-listen-symbol,
+  .direction-symbol,
   .mystery-symbol,
   .number-symbol {
     font-size: clamp(4.4rem, 16vw, 8rem);

@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.7",
-    label: "2026-06-03 build 7",
-    cacheName: "little-english-games-v22"
+    version: "2026.06.03.8",
+    label: "2026-06-03 build 8",
+    cacheName: "little-english-games-v23"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -215,6 +215,13 @@
     Object.freeze({ answer: "toothbrush", emoji: "🪥", clueIcons: Object.freeze(["🦷", "🫧"]), clues: Object.freeze(["I clean teeth.", "Use me every day."]) })
   ]);
   const QUIZ_SESSION_COUNT = 5;
+  const DIRECTION_ITEMS = Object.freeze([
+    Object.freeze({ word: "up", symbol: "↑" }),
+    Object.freeze({ word: "right", symbol: "→" }),
+    Object.freeze({ word: "down", symbol: "↓" }),
+    Object.freeze({ word: "left", symbol: "←" })
+  ]);
+  const DIRECTION_SCENARIOS_PER_GAME = 5;
   const MEMORY_LOCK_COUNT = 5;
   const MEMORY_KEYPAD_NUMBERS = Object.freeze([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
   const MEMORY_MODES = Object.freeze({ visible: "visible", hidden: "hidden" });
@@ -346,6 +353,7 @@
     actionGame: "#/who-is-doing-it",
     numberGame: "#/numbers",
     weatherGame: "#/weather",
+    directionsGame: "#/directions",
     whoAmI: "#/who-am-i",
     memoryLock: "#/memory-lock",
     memoryLockHidden: "#/memory-lock-hidden"
@@ -392,6 +400,14 @@
       actionLabel: "Find weather"
     }),
     Object.freeze({
+      id: "directions-find",
+      title: "Directions",
+      emoji: "↑ → ↓ ←",
+      color: "#6366f1",
+      description: "Hear a direction and choose the matching arrow.",
+      actionLabel: "Find arrows"
+    }),
+    Object.freeze({
       id: "who-am-i",
       title: "Who Am I?",
       emoji: "❓ 🐮 🍌",
@@ -424,6 +440,7 @@
     actionScenarios: [],
     numberScenarios: [],
     weatherScenarios: [],
+    directionScenarios: [],
     quizScenarios: [],
     memoryCodes: [],
     memoryHiddenIndexes: [],
@@ -432,12 +449,14 @@
     hasRevealedActionChoices: false,
     hasRevealedNumberChoices: false,
     hasRevealedWeatherChoices: false,
+    hasRevealedDirectionChoices: false,
     hasRevealedQuizChoices: false,
     isAdvancing: false,
     bagScenarioIndex: 0,
     actionScenarioIndex: 0,
     numberScenarioIndex: 0,
     weatherScenarioIndex: 0,
+    directionScenarioIndex: 0,
     quizScenarioIndex: 0,
     quizClueIndex: 0,
     memoryLockIndex: 0,
@@ -501,6 +520,13 @@
     weatherGameHelperText: document.getElementById("weather-game-helper-text"),
     weatherGameProgress: document.getElementById("weather-game-progress"),
     weatherGameParentExit: document.getElementById("weather-game-parent-exit"),
+    directionsGameScreen: document.getElementById("directions-game-screen"),
+    directionsGameBackButton: document.getElementById("directions-game-back-button"),
+    directionsGamePromptCard: document.getElementById("directions-game-prompt-card"),
+    directionsGameChoiceGrid: document.getElementById("directions-game-choice-grid"),
+    directionsGameHelperText: document.getElementById("directions-game-helper-text"),
+    directionsGameProgress: document.getElementById("directions-game-progress"),
+    directionsGameParentExit: document.getElementById("directions-game-parent-exit"),
     whoAmIScreen: document.getElementById("who-am-i-screen"),
     whoAmIBackButton: document.getElementById("who-am-i-back-button"),
     whoAmIPromptCard: document.getElementById("who-am-i-prompt-card"),
@@ -542,6 +568,7 @@
     elements.actionGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.numberGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.weatherGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
+    elements.directionsGameBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.whoAmIBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.memoryLockBackButton.addEventListener("click", () => navigateToCatalogWithSpeech());
     elements.sayFindPromptCard.addEventListener("click", handleSayFindPromptClick);
@@ -549,6 +576,7 @@
     elements.actionGamePromptCard.addEventListener("click", handleActionPromptClick);
     elements.numberGamePromptCard.addEventListener("click", handleNumberPromptClick);
     elements.weatherGamePromptCard.addEventListener("click", handleWeatherPromptClick);
+    elements.directionsGamePromptCard.addEventListener("click", handleDirectionPromptClick);
     elements.whoAmIPromptCard.addEventListener("click", handleQuizPromptClick);
     elements.memoryLockCard.addEventListener("click", handleMemoryLockClick);
     window.addEventListener("hashchange", renderCurrentRoute);
@@ -557,6 +585,7 @@
     bindParentExit(elements.actionGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.numberGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.weatherGameParentExit, () => navigateTo(ROUTES.catalog));
+    bindParentExit(elements.directionsGameParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.whoAmIParentExit, () => navigateTo(ROUTES.catalog));
     bindParentExit(elements.memoryLockParentExit, () => navigateTo(ROUTES.catalog));
   }
@@ -637,6 +666,10 @@
     }
     if (hash === ROUTES.weatherGame) {
       startWeatherGame();
+      return;
+    }
+    if (hash === ROUTES.directionsGame) {
+      startDirectionsGame();
       return;
     }
     if (hash === ROUTES.whoAmI) {
@@ -748,6 +781,10 @@
     }
     if (gameId === "weather-find") {
       navigateTo(ROUTES.weatherGame);
+      return;
+    }
+    if (gameId === "directions-find") {
+      navigateTo(ROUTES.directionsGame);
       return;
     }
     if (gameId === "who-am-i") {
@@ -1299,6 +1336,84 @@
   function getWeatherChoicePool() {
     return isLevelTwo() ? WEATHER_BASE_ROUNDS.concat(WEATHER_LEVEL_TWO_ROUNDS) : WEATHER_BASE_ROUNDS;
   }
+  function startDirectionsGame() {
+    state.directionScenarioIndex = 0;
+    state.directionScenarios = createDirectionScenarios();
+    state.hasRevealedDirectionChoices = false;
+    state.isAdvancing = false;
+    showScreen("directions-game");
+    renderDirectionScenario();
+  }
+  function renderDirectionScenario() {
+    const scenario = getCurrentDirectionScenario();
+    state.hasRevealedDirectionChoices = false;
+    state.isAdvancing = false;
+    elements.directionsGameProgress.textContent = `${state.directionScenarioIndex + 1} / ${state.directionScenarios.length}`;
+    elements.directionsGamePromptCard.style.borderColor = "#6366f1";
+    elements.directionsGamePromptCard.setAttribute("aria-label", "Hear the direction");
+    elements.directionsGameChoiceGrid.replaceChildren();
+    elements.directionsGameHelperText.textContent = "Tap the rectangle to hear a direction.";
+  }
+  function handleDirectionPromptClick() {
+    const scenario = getCurrentDirectionScenario();
+    void speakText(scenario.word);
+    if (state.hasRevealedDirectionChoices) {
+      return;
+    }
+    state.hasRevealedDirectionChoices = true;
+    elements.directionsGameHelperText.textContent = "Tap the arrow that matches.";
+    renderDirectionChoices(scenario);
+  }
+  function renderDirectionChoices(scenario) {
+    const choiceCards = shuffleItems(DIRECTION_ITEMS).map((choice) => createDirectionChoiceCard(choice, scenario.word));
+    elements.directionsGameChoiceGrid.replaceChildren(...choiceCards);
+  }
+  function createDirectionChoiceCard(choice, answerWord) {
+    const button = document.createElement("button");
+    button.className = "card choice-card";
+    button.type = "button";
+    button.setAttribute("aria-label", choice.word);
+    button.innerHTML = `
+      <span class="direction-symbol" aria-hidden="true">${choice.symbol}</span>
+      <span class="word-label">${choice.word}</span>
+    `;
+    button.addEventListener("click", () => handleDirectionChoiceClick(choice, answerWord, button));
+    return button;
+  }
+  async function handleDirectionChoiceClick(choice, answerWord, button) {
+    if (state.isAdvancing) {
+      return;
+    }
+    if (choice.word !== answerWord) {
+      await speakText(choice.word);
+      return;
+    }
+    state.isAdvancing = true;
+    button.classList.add("is-found");
+    await speakText(choice.word);
+    playHappySound();
+    window.setTimeout(advanceDirectionScenario, NEXT_SCENARIO_DELAY_MS);
+  }
+  function advanceDirectionScenario() {
+    const isGameFinished = state.directionScenarioIndex + 1 >= state.directionScenarios.length;
+    if (isGameFinished) {
+      addUnique(progress.completedGameIds, "directions-find");
+      saveProgress(progress);
+      showCompletionCelebration(() => navigateTo(ROUTES.catalog));
+      return;
+    }
+    state.directionScenarioIndex += 1;
+    renderDirectionScenario();
+  }
+  function getCurrentDirectionScenario() {
+    if (state.directionScenarios.length === 0) {
+      state.directionScenarios = createDirectionScenarios();
+    }
+    return state.directionScenarios[state.directionScenarioIndex];
+  }
+  function createDirectionScenarios() {
+    return Array.from({ length: DIRECTION_SCENARIOS_PER_GAME }, () => DIRECTION_ITEMS[Math.floor(Math.random() * DIRECTION_ITEMS.length)]);
+  }
   function startQuizGame() {
     state.quizScenarioIndex = 0;
     state.quizClueIndex = 0;
@@ -1730,7 +1845,7 @@
     oscillator.stop(options.startTime + 0.2);
   }
   function showScreen(screenName) {
-    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "who-am-i", "memory-lock"].includes(screenName);
+    const isGameScreen = ["say-find", "pack-bag", "action-game", "number-game", "weather-game", "directions-game", "who-am-i", "memory-lock"].includes(screenName);
     updateAppViewportHeight();
     document.body.classList.toggle("is-game-active", isGameScreen);
     elements.catalogScreen.classList.toggle("screen-active", screenName === "catalog");
@@ -1741,6 +1856,7 @@
     elements.actionGameScreen.classList.toggle("screen-active", screenName === "action-game");
     elements.numberGameScreen.classList.toggle("screen-active", screenName === "number-game");
     elements.weatherGameScreen.classList.toggle("screen-active", screenName === "weather-game");
+    elements.directionsGameScreen.classList.toggle("screen-active", screenName === "directions-game");
     elements.whoAmIScreen.classList.toggle("screen-active", screenName === "who-am-i");
     elements.memoryLockScreen.classList.toggle("screen-active", screenName === "memory-lock");
     if (screenName !== "memory-lock") {
@@ -1812,6 +1928,7 @@
     getActionScenarioCount: () => ACTION_SCENARIOS_PER_GAME,
     getNumberScenarioCount: () => NUMBER_SCENARIOS_PER_GAME,
     getWeatherScenarioCount: () => WEATHER_SCENARIOS_PER_GAME,
+    getDirectionScenarioCount: () => DIRECTION_SCENARIOS_PER_GAME,
     getQuizItemCount: () => QUIZ_ITEMS.length,
     getQuizSessionCount: () => QUIZ_SESSION_COUNT,
     getMemoryLockCount: () => MEMORY_LOCK_COUNT,
