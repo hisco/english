@@ -175,6 +175,26 @@
         </div>
         <div id="who-am-i-choice-grid" class="choice-grid" aria-label="Quiz answer choices"></div>
       </section>
+      <section id="directions-game-screen" class="screen game-screen directions-game-screen" aria-labelledby="directions-game-title">
+        <div id="directions-game-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
+        <header class="game-header">
+          <div>
+            <p class="eyebrow">Directions</p>
+            <h1 id="directions-game-title">Find the direction</h1>
+          </div>
+          <div class="header-actions">
+            <button id="directions-game-back-button" class="soft-button" type="button">Game catalog</button>
+            <div id="directions-game-progress" class="progress-pill"></div>
+          </div>
+        </header>
+        <div class="prompt-area">
+          <button id="directions-game-prompt-card" class="card direction-prompt-card" type="button" aria-label="Hear the direction">
+            <span class="direction-listen-symbol" aria-hidden="true">🔊</span>
+          </button>
+          <p id="directions-game-helper-text" class="helper-text">Tap the rectangle to hear a direction.</p>
+        </div>
+        <div id="directions-game-choice-grid" class="choice-grid" aria-label="Direction choices"></div>
+      </section>
       <section id="memory-lock-screen" class="screen game-screen memory-lock-screen" aria-labelledby="memory-lock-title">
         <div id="memory-lock-parent-exit" class="parent-exit" aria-label="Hold to return to games"></div>
         <header class="game-header">
