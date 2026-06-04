@@ -1,0 +1,71 @@
+
+.color-find-screen.screen-active {
+  display: flex;
+  flex-direction: column;
+  height: calc(var(--app-viewport-height) - (var(--app-shell-padding) * 2));
+  min-height: 0;
+  overflow: hidden;
+  width: min(72rem, 100%);
+  margin: 0 auto;
+}
+
+.color-stage {
+  display: grid;
+  gap: clamp(0.75rem, 2vw, 1.25rem);
+  justify-items: center;
+  margin: auto 0;
+}
+
+.color-prompt-card {
+  width: min(28rem, 90vw);
+  min-height: min(38vh, 17rem);
+  border-color: #111827;
+}
+
+.color-swatch {
+  border: 0.35rem solid rgba(255, 255, 255, 0.72);
+  border-radius: 1.6rem;
+  box-shadow: inset 0 0 0 0.25rem rgba(31, 41, 55, 0.16);
+  height: min(18rem, 26vh);
+  width: min(20rem, 68vw);
+}
+
+.color-swatch.is-empty {
+  background: repeating-linear-gradient(45deg, #ffffff, #ffffff 1rem, #f3f4f6 1rem, #f3f4f6 2rem) !important;
+}
+
+.color-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.8rem, 2.5vw, 1.35rem);
+  width: min(42rem, 100%);
+}
+
+.color-choice {
+  align-items: center;
+  border: 0.3rem solid var(--card-border);
+  border-radius: 1.6rem;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  display: grid;
+  min-height: clamp(6.5rem, 18vh, 10rem);
+  place-items: center;
+  touch-action: manipulation;
+}
+
+.color-choice.is-found {
+  border-color: var(--green);
+  transform: translateY(-0.4rem) scale(0.98);
+}
+
+@media (max-height: 760px) {
+  .color-prompt-card {
+    min-height: min(32vh, 13rem);
+  }
+  .color-swatch {
+    height: min(12rem, 21vh);
+  }
+  .color-choice {
+    min-height: clamp(4.5rem, 14vh, 7rem);
+  }
+}
