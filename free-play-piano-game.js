@@ -189,17 +189,38 @@
     if (!audioContext) {
       return;
     }
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.value = note.frequency;
-    gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.34, audioContext.currentTime + 0.025);
-    gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.6);
+    playPianoTone({ audioContext, frequency: note.frequency, startTime: audioContext.currentTime });
+  }
+  function playPianoTone(options) {
+    const harmonics = [
+      { ratio: 1, gain: 0.34, type: "triangle" },
+      { ratio: 2, gain: 0.13, type: "sine" },
+      { ratio: 3, gain: 0.055, type: "sine" }
+    ];
+    harmonics.forEach((harmonic) => {
+      playPianoPartial({
+        audioContext: options.audioContext,
+        frequency: options.frequency * harmonic.ratio,
+        startTime: options.startTime,
+        gainValue: harmonic.gain,
+        oscillatorType: harmonic.type
+      });
+    });
+  }
+  function playPianoPartial(options) {
+    const duration = 0.9;
+    const oscillator = options.audioContext.createOscillator();
+    const gain = options.audioContext.createGain();
+    oscillator.type = options.oscillatorType;
+    oscillator.frequency.value = options.frequency;
+    gain.gain.setValueAtTime(0.0001, options.startTime);
+    gain.gain.exponentialRampToValueAtTime(options.gainValue, options.startTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(options.gainValue * 0.32, options.startTime + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.0001, options.startTime + duration);
     oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.62);
+    gain.connect(options.audioContext.destination);
+    oscillator.start(options.startTime);
+    oscillator.stop(options.startTime + duration + 0.04);
   }
   function getAudioContext() {
     const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
