@@ -1,9 +1,9 @@
 (function initializeApplication() {
   "use strict";
   const APP_BUILD = Object.freeze({
-    version: "2026.06.03.14",
-    label: "2026-06-03 build 14",
-    cacheName: "little-english-games-v29"
+    version: "2026.06.04.1",
+    label: "2026-06-04 build 1",
+    cacheName: "little-english-games-v31"
   });
   const SAY_FIND_PACKS = Object.freeze([
     Object.freeze({
@@ -1681,7 +1681,7 @@
     if (!audioContext) {
       return;
     }
-    playTone({ audioContext, frequency: note.frequency, startTime: audioContext.currentTime, duration: 0.62, gainValue: 0.34 });
+    playPianoTone({ audioContext, frequency: note.frequency, startTime: audioContext.currentTime });
   }
   function finishMusicTune() {
     state.isAdvancing = true;
@@ -2512,6 +2512,37 @@
       window.setTimeout(resolveOnce, SPEECH_FALLBACK_MS);
       window.speechSynthesis.speak(utterance);
     });
+  }
+  function playPianoTone(options) {
+    const harmonics = [
+      { ratio: 1, gain: 0.34, type: "triangle" },
+      { ratio: 2, gain: 0.13, type: "sine" },
+      { ratio: 3, gain: 0.055, type: "sine" }
+    ];
+    harmonics.forEach((harmonic) => {
+      playPianoPartial({
+        audioContext: options.audioContext,
+        frequency: options.frequency * harmonic.ratio,
+        startTime: options.startTime,
+        gainValue: harmonic.gain,
+        oscillatorType: harmonic.type
+      });
+    });
+  }
+  function playPianoPartial(options) {
+    const duration = 0.9;
+    const oscillator = options.audioContext.createOscillator();
+    const gain = options.audioContext.createGain();
+    oscillator.type = options.oscillatorType;
+    oscillator.frequency.value = options.frequency;
+    gain.gain.setValueAtTime(0.0001, options.startTime);
+    gain.gain.exponentialRampToValueAtTime(options.gainValue, options.startTime + 0.015);
+    gain.gain.exponentialRampToValueAtTime(options.gainValue * 0.32, options.startTime + 0.12);
+    gain.gain.exponentialRampToValueAtTime(0.0001, options.startTime + duration);
+    oscillator.connect(gain);
+    gain.connect(options.audioContext.destination);
+    oscillator.start(options.startTime);
+    oscillator.stop(options.startTime + duration + 0.04);
   }
   function playHappySound() {
     const audioContext = getAudioContext();
